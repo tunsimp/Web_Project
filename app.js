@@ -14,5 +14,5 @@ app.get('/login',(req,res)=>{
     res.sendFile('./views/login.html',{root:__dirname});
 });
 app.use((req,res)=>{
-    res.sendFile('./views/404.html',{root:__dirname});
+    res.statusCode(404).sendFile('./views/404.html',{root:__dirname});
 });
