@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About Me</title>
+  <h1>About me actually!</h1>
+</head>
+<body>
+    <%- include('./partials/nav.ejs') %>
+
+  <h2>Story time!</h2>
+  <% if (stories.length > 0) { %>
+    <ul>
+      <% stories.forEach(story => { %>
+        <li class="stories"><%= story %></li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No stories to share at the moment.</p>
+  <% } %>
+  <%- include('./partials/footer.ejs') %>
+</body>
+</html>
