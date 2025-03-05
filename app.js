@@ -1,3 +1,4 @@
+const e = require('express');
 const express= require('express');
 const fs = require('fs');
 const _ = require('lodash');
@@ -28,20 +29,26 @@ app.get('/about',(req,res)=>{
     res.render('about',{stories:stories});
 });
 app.get('/login',(req,res)=>{
-    res.render('login');
+    res.render('login',error='');
 });
 
 app.post('/login', (req, res) => {
-    const { first, password } = req.body;
-    console.log(first, password);
+    const { username, password } = req.body;
+    console.log(username, password);
     // Process the login here
+    if (!username || !password) {
+      return res.render('login', { error: 'Please enter both username and password' });
+    }
     (async () => {
         try {
-          const [rows] = await pool.query('SELECT * FROM users WHERE user_name = ? AND user_password = ?', [first, password]);
+          const [rows] = await pool.query('SELECT * FROM users WHERE user_name = ? AND user_password = ?', [username, password]);
           if (rows.length === 0) {
-            return res.status(401).send('Invalid username or password');
+            return res.render('login', { error: 'Invalid username or password' });
           }
           else{
+            if (rows[0].user_role === 'admin' ) {
+              return res.render('admin');
+            }
             res.render('index');
           };
         } catch (err) {
@@ -51,7 +58,13 @@ app.post('/login', (req, res) => {
       })();
     });
 
+app.get('/register',(req,res)=>{
+    res.render('register',error='');
+});
 
+app.post('/register',(req,res)=>{
+  res.render('register',error='');
+});
 app.use((req,res)=>{
     res.status(404).render('404');  
 });
