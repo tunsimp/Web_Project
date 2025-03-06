@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - .:/usr/src/app  
+    restart: unless-stopped
+
+volumes:
+  vul_challenge_db:
