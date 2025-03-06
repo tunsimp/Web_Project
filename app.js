@@ -1,9 +1,14 @@
-const e = require("express");
 const express = require("express");
 const fs = require("fs");
 const _ = require("lodash");
 const app = express();
 const mysql = require("mysql2");
+
+const Docker = require('dockerode');
+const docker = new Docker({
+  socketPath: '\\\\.\\pipe\\docker_engine'  // Windows named pipe
+});
+
 
 const pool = mysql
   .createPool({
@@ -38,34 +43,28 @@ app.get("/login", (req, res) => {
   res.render("login", (error = ""));
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   console.log(username, password);
   // Process the login here
   if (!username || !password) {
-    return res.render("login", {
-      error: "Please enter both username and password",
-    });
+    return res.render("login", { error: "Please enter both username and password" });
   }
-  (async () => {
-    try {
-      const [rows] = await pool.query(
-        "SELECT * FROM users WHERE user_name = ? AND user_password = ?",
-        [username, password]
-      );
-      if (rows.length === 0) {
-        return res.render("login", { error: "Invalid username or password" });
-      } else {
-        if (rows[0].user_role === "admin") {
-          return res.render("admin");
-        }
-        res.render("index");
+
+  try {
+    const [rows] = await pool.query("SELECT * FROM users WHERE user_name = ? AND user_password = ?", [username, password]);
+    if (rows.length === 0) {
+      return res.render("login", { error: "Invalid username or password" });
+    } else {
+      if (rows[0].user_role === "admin") {
+        return res.render("admin");
       }
-    } catch (err) {
-      console.error(err);
-      return res.status(500).send("Internal Server Error");
+      res.render("index");
     }
-  })();
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send("Internal Server Error");
+  }
 });
 
 app.get("/register", (req, res) => {
@@ -101,6 +100,24 @@ app.post("/register", (req, res) => {
     }
   })();
 });
+
+app.get("/docker", (req, res) => {
+  docker.listImages((err, images) => {
+    if (err) {
+      console.log('Error listing images:', err);
+      return res.status(500).send("Error listing images");
+    } else {
+      // Collect the image details and send them as a single response
+      let imageDetails = images.map(image => {
+        return { id: image.Id, repoTags: image.RepoTags };
+      });
+
+      // Send the response once, with all the collected image details
+      res.json(imageDetails);
+    }
+  });
+});
+
 
 
 app.use((req, res) => {
