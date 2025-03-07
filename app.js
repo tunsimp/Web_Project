@@ -1,125 +1,57 @@
-const express = require("express");
-const fs = require("fs");
-const _ = require("lodash");
+const express = require('express');
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
+const path = require('path');
+const authRoutes = require('./routes/authRoutes');
+const indexRoutes = require('./routes/indexRoutes');
+const checkAuth = require('./middleware/checkAuth'); // Import checkAuth middleware
+
 const app = express();
-const mysql = require("mysql2");
 
-const Docker = require('dockerode');
-const docker = new Docker({
-  socketPath: '\\\\.\\pipe\\docker_engine'  // Windows named pipe
-});
+// Set the view engine
+app.set('view engine', 'ejs');
 
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cookieParser());
 
-const pool = mysql
-  .createPool({
-    host: "127.0.0.1",
-    user: "root",
-    password: "root",
-    database: "secacademy",
-  })
-  .promise();
+// Session configuration
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 60000 * 60, secure: process.env.NODE_ENV === 'production' }
+}));
 
-app.use(express.urlencoded({ extended: true })); // Parses application/x-www-form-urlencoded
-app.use(express.json()); // Parses application/json
-app.set("view engine", "ejs");
-app.set("views", "./views");
-app.listen(3000);
-console.log("app is running on port 3000");
-app.use(express.static("public"));
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-const stories = [
-  "im 21 year old",
-  "i have an lovely family and girlfriend",
-  "i want to be an pentester",
-];
-
-app.get("/", (req, res) => {
-  res.render("index");
-});
-app.get("/about", (req, res) => {
-  res.render("about", { stories: stories });
-});
-app.get("/login", (req, res) => {
-  res.render("login", (error = ""));
-});
-
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  console.log(username, password);
-  // Process the login here
-  if (!username || !password) {
-    return res.render("login", { error: "Please enter both username and password" });
+app.use((req, res, next) => {
+  // If user is trying to access login or register page while already logged in, redirect to home
+  if ((req.path === '/login' || req.path === '/register') && req.session.username) {
+    return res.redirect('/'); // Redirect to home page if already logged in
+  }
+  
+  // Check authentication for all routes except login/register
+  if (req.path !== '/login' && req.path !== '/register' && !req.session.username) {
+    return res.redirect('/login');  // Redirect to login if not authenticated
   }
 
-  try {
-    const [rows] = await pool.query("SELECT * FROM users WHERE user_name = ? AND user_password = ?", [username, password]);
-    if (rows.length === 0) {
-      return res.render("login", { error: "Invalid username or password" });
-    } else {
-      if (rows[0].user_role === "admin") {
-        return res.render("admin");
-      }
-      res.render("index");
-    }
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Internal Server Error");
-  }
+  next();  // Proceed if authenticated or it's login/register route
 });
 
-app.get("/register", (req, res) => {
-  res.render("register", (error = ""));
-});
+// Use routes
+app.use(authRoutes);
+app.use('/', indexRoutes);
 
-app.post("/register", (req, res) => {
-  const { username, password, repassword, email } = req.body;
-  if (!username || !password || !repassword || !email) {
-    return res.render("register", { error: "Please enter all fields" });
-  }
-  if (password !== repassword) {
-    return res.render("register", { error: "Passwords are not the same" });
-  }
-  (async () => {
-    try {
-      const [rows] = await pool.query(
-        "SELECT * FROM users WHERE user_name = ?",
-        [username]
-      );
-      if (rows.length > 0) {
-        return res.render("register", { error: "Username has already taken" });
-      } else {
-        await pool.query(
-          "INSERT INTO users (user_name, user_password, user_email) VALUES (?, ?, ?)",
-          [username, password, email]
-        );
-        res.render("login", { error: "Register successfully" });
-      }
-    } catch (err) {
-      console.error(err);
-      return res.status(500).send("Internal Server Error");
-    }
-  })();
-});
-
-app.get("/docker", (req, res) => {
-  docker.listImages((err, images) => {
-    if (err) {
-      console.log('Error listing images:', err);
-      return res.status(500).send("Error listing images");
-    } else {
-      // Collect the image details and send them as a single response
-      let imageDetails = images.map(image => {
-        return { id: image.Id, repoTags: image.RepoTags };
-      });
-
-      // Send the response once, with all the collected image details
-      res.json(imageDetails);
-    }
-  });
-});
-
-
-
+// Handle 404 if route is not defined
 app.use((req, res) => {
-  res.status(404).render("404");
+  res.status(404).render('404');
+});
+
+// Start the server
+const port = process.env.PORT || 443;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
