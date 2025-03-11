@@ -9,17 +9,15 @@ exports.login = async (req, res) => {
     }
   
     try {
-      const [rows] = await pool.query("SELECT * FROM Users WHERE user_name = ?", [username]);
+      const [rows] = await pool.query("SELECT * FROM users WHERE user_name = ?", [username]);
   
       if (rows.length === 0 || !(await bcrypt.compare(password, rows[0].user_password))) {
         return res.render("login", { error: "Invalid username or password" });
       }
-      console.log('Rows:',rows);
+  
       // Set the session username
       req.session.username = username;
-      req.session.userId = rows[0].user_id;
-      req.session.containerId = '';
-      console.log('Session:',req.session);
+  
       // Redirect to the dashboard or home page after successful login
       if (rows[0].user_role === "admin") {
         return res.redirect("/admin"); // Redirect to admin dashboard if the user is an admin
@@ -41,14 +39,14 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const [rows] = await pool.query('SELECT * FROM Users WHERE user_name = ?', [username]);
+    const [rows] = await pool.query('SELECT * FROM users WHERE user_name = ?', [username]);
 
     if (rows.length > 0) {
       return res.render('register', { error: 'Username already taken' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await pool.query('INSERT INTO Users (user_name, user_password, user_email) VALUES (?, ?, ?)', 
+    await pool.query('INSERT INTO users (user_name, user_password, user_email) VALUES (?, ?, ?)', 
       [username, hashedPassword, email]);
 
     return res.render('login', { error: 'Registration successful! Please login.' });
