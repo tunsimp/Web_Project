@@ -1,5 +1,5 @@
 function checkAuth(req, res, next) {
-    if (!req.session.username) {
+    if (!req.session.userId) {
       // Redirect to login page if not authenticated
       return res.redirect("/login");
     }
