@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const { deleteContainer } = require('../controllers/dockerController');
 
 // Login routes
 
@@ -17,13 +18,13 @@ router.get('/register', (req, res) => {
 
 router.post('/register', authController.register);  // Call the register controller
 
-router.get('/logout', (req, res) => {
+router.get('/logout',deleteContainer, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).send('Error logging out');
     }
     res.clearCookie('connect.sid');
-    res.redirect('/auth/login');  // Redirect to login page after logout
+    res.redirect('/login');  // Redirect to login page after logout
   });
 });
 module.exports = router;
