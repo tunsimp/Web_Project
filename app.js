@@ -53,5 +53,5 @@ app.use((req, res) => {
 // Start the server
 const port = process.env.PORT || 443;
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running on port localhost:${port}`);
 });
