@@ -68,11 +68,22 @@ async function createContainerWithRandomPort(imageName) {
 }
 
 exports.deleteContainer = async (req, res) => {
-  if(req.session.containerId !== ''){
+  if (req.session.containerId !== ''){
     await deleteContainer(req.session.containerId);
     req.session.containerId = '';
   }
-  res.redirect('/');
+  res.send(`
+    <html>
+      <head>
+        <script>
+          window.close();
+        </script>
+      </head>
+      <body>
+        <p>Container deleted. Closing window...</p>
+      </body>
+    </html>
+  `);
 }
 // Controller method called from the route
 exports.createContainerController = async (req, res) => {
@@ -87,10 +98,7 @@ exports.createContainerController = async (req, res) => {
   try {
     const {randomPort,containerId} = await createContainerWithRandomPort(imageName);
     req.session.containerId = containerId;
-    res.status(200).json({
-      message: `Container created successfully from image: ${imageName}`,
-      randomPort
-    });
+    res.redirect(`http://localhost:${randomPort}`);
   } catch (error) {
     console.error('Error creating container:', error);
     res.status(500).json({ error: 'Failed to create or start container' });
