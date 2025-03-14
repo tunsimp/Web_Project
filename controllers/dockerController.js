@@ -27,12 +27,10 @@ async function isPortInUse(port) {
 // Helper: Find a random free port
 async function getAvailablePort(minPort = 10000, maxPort = 65535) {
   let randomPort = Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
-  
   while (await isPortInUse(randomPort)) {
     console.log(`Port ${randomPort} is in use, retrying...`);
     randomPort = Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
   }
-
   return randomPort;
 }
 
@@ -43,29 +41,67 @@ async function deleteContainer(containerId) {
   console.log(`Container ${containerId} deleted`);
 }
 
-// (Optional) Service function if you want to keep container creation separate
-async function createContainerWithRandomPort(imageName) {
-  const randomPort = await getAvailablePort();
+async function getExposedPorts(imageName) {
+  try {
+    const image = docker.getImage(imageName);
+    const imageInfo = await image.inspect();
+    const exposedPorts = imageInfo.Config.ExposedPorts; // e.g., { '5000/tcp': {} }
+    console.log("Exposed Ports:", exposedPorts);
+    return exposedPorts;
+  } catch (err) {
+    console.error("Error inspecting image:", err);
+    throw err;
+  }
+}
 
-  // Create the container with a random port binding
+// (Optional) Service function if you want to keep container creation separate
+async function createContainer(imageName) {
+  // Retrieve the exposed ports from the image configuration
+  const exposedPorts = await getExposedPorts(imageName);
+  const exposedPortKeys = Object.keys(exposedPorts);
+  
+  if (exposedPortKeys.length === 0) {
+    throw new Error("No exposed ports found in the image.");
+  }
+  
+  // Choose one of the exposed ports (for example, the first one)
+  const portKey = exposedPortKeys[0];
+  
+  // Create the container with dynamic host port assignment for the chosen port
   const container = await docker.createContainer({
     Image: imageName,
     HostConfig: {
       PortBindings: {
-        '5000/tcp': [
-          { HostPort: randomPort.toString() }
+        [portKey]: [
+          { HostPort: "0" } // Let Docker assign an available host port dynamically
         ]
       }
     }
   });
-
+  
   // Start the container
   await container.start();
+  
+  // Inspect the container to retrieve the dynamically assigned host port
+  const info = await container.inspect();
+  const hostPort = info.NetworkSettings.Ports[portKey][0].HostPort;
   const containerId = container.id;
-  // Log and return the random port assigned
-  console.log(`Container created from image ${imageName} on port: ${randomPort}`);
-  return { randomPort, containerId };
+  
+  console.log(`Container created from image ${imageName} on port: ${hostPort}`);
+  
+  // Set a TTL (e.g., 30 seconds) to automatically stop and remove the container
+  setTimeout(async () => {
+    try {
+      await deleteContainer(containerId);
+      console.log(`Container ${containerId} stopped and removed after TTL`);
+    } catch (err) {
+      console.error(`Error stopping container ${containerId}:`, err);
+    }
+  }, 3600000); // TTL of 30000 milliseconds (30 seconds)
+  
+  return { hostPort, containerId };
 }
+
 
 exports.deleteContainer = async (req, res) => {
   if (req.session.containerId !== ''){
@@ -96,11 +132,13 @@ exports.createContainerController = async (req, res) => {
   }
 
   try {
-    const {randomPort,containerId} = await createContainerWithRandomPort(imageName);
+    const {hostPort,containerId} = await createContainer(imageName);
     req.session.containerId = containerId;
-    res.redirect(`http://localhost:${randomPort}`);
+    res.redirect(`http://localhost:${hostPort}`);
   } catch (error) {
     console.error('Error creating container:', error);
     res.status(500).json({ error: 'Failed to create or start container' });
   }
 };
+
+

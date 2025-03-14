@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const checkAuth = require('../middleware/checkAuth');
-const { createContainerController, deleteContainer } = require('../controllers/dockerController');
+const { createContainerController, deleteContainer,getContainerPort } = require('../controllers/dockerController');
 
 // Example: protected home route
 router.get('/', checkAuth, (req, res) => {
@@ -23,5 +23,4 @@ router.get('/about', checkAuth, (req, res) => {
 // Route that calls our Docker controller
 router.get('/create-container/:imageName', checkAuth, createContainerController);
 router.get('/delete-container',deleteContainer);
-
 module.exports = router;
