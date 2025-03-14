@@ -35,6 +35,9 @@ async function getAvailablePort(minPort = 10000, maxPort = 65535) {
 }
 
 async function deleteContainer(containerId) {
+  if (!containerId) {
+    throw new Error("Container ID is required");
+  }
   const container = docker.getContainer(containerId);
   await container.stop();
   await container.remove();
@@ -81,24 +84,39 @@ async function createContainer(imageName) {
   
   // Start the container
   await container.start();
-  
   // Inspect the container to retrieve the dynamically assigned host port
   const info = await container.inspect();
   const hostPort = info.NetworkSettings.Ports[portKey][0].HostPort;
   const containerId = container.id;
-  
+
   console.log(`Container created from image ${imageName} on port: ${hostPort}`);
   
-  // Set a TTL (e.g., 30 seconds) to automatically stop and remove the container
   setTimeout(async () => {
     try {
-      await deleteContainer(containerId);
-      console.log(`Container ${containerId} stopped and removed after TTL`);
-    } catch (err) {
-      console.error(`Error stopping container ${containerId}:`, err);
-    }
-  }, 3600000); // TTL of 30000 milliseconds (30 seconds)
+      const container = docker.getContainer(containerId);
+      let containerInfo;
+      try {
+        containerInfo = await container.inspect();
+      } catch (inspectError) {
+        // If the container no longer exists, log and exit the TTL callback.
+        if (inspectError.statusCode === 404) {
+          console.log(`Container ${containerId} no longer exists; skipping TTL removal.`);
+          return;
+        }
+        // Re-throw other errors
+        throw inspectError;
+      }
   
+      // Only attempt to stop the container if it is still running
+      if (containerInfo.State.Running) {
+        await deleteContainer(containerId);
+      }
+      // Attempt to remove the container; if it's already removed, this may error out,
+      // so we catch that error too.
+    } catch (err) {
+      console.error(`Error handling TTL for container ${containerId}:`, err);
+    }
+  }, 30000); // TTL of 30 seconds
   return { hostPort, containerId };
 }
 
