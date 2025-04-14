@@ -2,11 +2,22 @@ const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const indexRoutes = require('./routes/indexRoutes');
-const checkAuth = require('./middleware/checkAuth'); // Import checkAuth middleware
+const checkAuth = require('./middleware/checkAuth');
 
 const app = express();
+
+// Set up CORS options
+const corsOptions = {
+  origin: 'http://localhost:3000',  // Allow only the frontend's URL
+  methods: 'GET,POST',
+  allowedHeaders: 'Content-Type',
+};
+
+// Enable CORS
+app.use(cors(corsOptions));
 
 // Set the view engine
 app.set('view engine', 'ejs');
@@ -28,17 +39,15 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  // If user is trying to access login or register page while already logged in, redirect to home
   if ((req.path === '/login' || req.path === '/register') && req.session.username) {
-    return res.redirect('/'); // Redirect to home page if already logged in
+    return res.redirect('/');
   }
   
-  // Check authentication for all routes except login/register
   if (req.path !== '/login' && req.path !== '/register' && !req.session.username) {
-    return res.redirect('/login');  // Redirect to login if not authenticated
+    return res.redirect('/login');
   }
 
-  next();  // Proceed if authenticated or it's login/register route
+  next();
 });
 
 // Use routes
@@ -51,7 +60,7 @@ app.use((req, res) => {
 });
 
 // Start the server
-const port = process.env.PORT || 443;
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server running on port localhost:${port}`);
 });
