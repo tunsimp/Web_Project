@@ -1,11 +1,22 @@
-function checkAuth(req, res, next) {
-    if (!req.session.userId) {
-      // Redirect to login page if not authenticated
-      return res.redirect("/login");
-    }
-    // Proceed to the next middleware or route handler if authenticated
-    next();
+// middleware/checkAuth.js
+const jwt = require("jsonwebtoken");
+
+const checkAuth = (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
-  
-  module.exports = checkAuth; // Export the middleware to be used in routes
-  
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
+    req.user_name = decoded.username;
+    req.user_id = decoded.uid;
+    next();
+  } catch (err) {
+    console.error("Token verification failed:", err);
+    return res.status(401).json({ message: "Unauthorized: Invalid token" });
+  }
+};
+
+module.exports = checkAuth;

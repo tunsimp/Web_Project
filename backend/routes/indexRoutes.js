@@ -1,26 +1,23 @@
 // routes/indexRoutes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const checkAuth = require('../middleware/checkAuth');
-const { createContainerController, deleteContainer} = require('../controllers/dockerController');
+const checkAuth = require("../middleware/checkAuth");
+
+const {
+  createContainerController,
+  deleteContainer,
+} = require("../controllers/dockerController");
 
 // Example: protected home route
-router.get('/', checkAuth, (req, res) => {
-  res.render('index');
-});
-
-// Example: about route
-router.get('/about', checkAuth, (req, res) => {
-  res.render('about', {
-    stories: [
-      "I'm 21 years old",
-      "I have a lovely family and girlfriend",
-      "I want to be a pentester"
-    ]
-  });
+router.get("/home", checkAuth, (req, res) => {
+  res.json({ message: "valid", user_name: req.user_name });
 });
 
 // Route that calls our Docker controller
-router.get('/create-container/:imageName', checkAuth, createContainerController);
-router.get('/delete-container',deleteContainer);
+router.get(
+  "/create-container/:imageName",
+  checkAuth,
+  createContainerController
+);
+router.get("/delete-container", deleteContainer);
 module.exports = router;
