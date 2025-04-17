@@ -1,0 +1,44 @@
+header {
+  background-color: aliceblue;
+  background-image: url("../assets/background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100%;
+  padding: 20px 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box; /* Add this to include padding in width calculation */
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+}
+
+.navbar a {
+  position: relative;
+  font-size: 18px;
+  color: rgb(255, 255, 255);
+  font-weight: 500;
+  margin-left: 20px;
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+.navbar a::before {
+  content: "";
+  position: absolute;
+  top: 90%;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #fff;
+  transition: 0.3s;
+}
+.navbar a:hover::before {
+  width: 100%;
+}

@@ -77,7 +77,9 @@ const LoginSignup = () => {
 
   return (
     <div className="container">
-      <div className="header">
+          <div className="background-wrapper"></div>
+
+      <div className="login-header">
         <div className="text">TSAcademy</div>
       </div>
       <div className="content">
