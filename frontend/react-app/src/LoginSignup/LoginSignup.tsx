@@ -57,8 +57,13 @@ const LoginSignup = () => {
         setFormData({ username: '', email: '', password: '', confirmPassword: '' });
         if (isLogin) {
           // Successful login: redirect to /home
+          if (response.data.isAdmin) {
+            setMessage('Login successful');
+            navigate('/admin'); // Redirect to admin page if user is admin
+          }
+          else{
           setMessage('Login successful');
-          navigate('/home');
+          navigate('/home');}
         } else {
           // Successful registration: switch to login form
           setMessage('Registration successful! Please log in.');

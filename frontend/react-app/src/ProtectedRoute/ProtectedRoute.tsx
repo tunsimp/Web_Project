@@ -3,15 +3,21 @@ import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import axios from "axios";
 
-const ProtectedRoute = () => {
+interface ProtectedRouteProps {
+  requiredRole?: string;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole }) => {
   const [auth, setAuth] = useState<boolean | null>(null); // null = loading, true = authenticated, false = unauthenticated
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/route/home", { withCredentials: true })
+      .get("http://localhost:5000/api/auth/check-auth", { withCredentials: true })
       .then((res) => {
-        if (res.data.message === "valid") {
+        if (res.data.message === "authenticated") {
           setAuth(true);
+          setUserRole(res.data.user.role); // Assuming the user object has a role field
         } else {
           setAuth(false);
         }
@@ -23,7 +29,15 @@ const ProtectedRoute = () => {
     return <div>Loading...</div>; // Show loading state while checking auth
   }
 
-  return auth ? <Outlet /> : <Navigate to="/auth" replace />;
+  if (!auth) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (requiredRole && userRole !== requiredRole) {
+    return <Navigate to="/home" replace />; // Redirect to home if role doesn't match
+  }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

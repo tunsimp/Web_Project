@@ -30,23 +30,31 @@ exports.login = async (req, res) => {
     console.log("Rows:", rows);
     // Set the session username
     const uid = rows[0].user_id;
+    const role = rows[0].user_role;
     const containerId = "";
+
+    // Include user_role in the token payload
     const token = jwt.sign(
-      { username: rows[0].user_name, uid, containerId },
+      {
+        username: rows[0].user_name,
+        uid,
+        role, // Add the role to the token
+        containerId,
+      },
       process.env.JWT_SECRET || "JWT_SECRET", // Use environment variable
       { expiresIn: "1h" }
     );
-    // Redirect to the dashboard or home page after successful login
-    if (rows[0].user_role === "admin") {
-      return res.json({ message: "you are admin" }); // Redirect to admin dashboard if the user is an admin
-    }
+
     console.log("Token:", token);
-    res.cookie("token", token); // Set the token in a cookie
+    res.cookie("token", token, { httpOnly: true }); // Set the token in a cookie
+
+    // Return consistent response format for both admin and regular users
     return res.json({
       success: true,
       message: "Login successful",
+      isAdmin: role === "admin",
       token: token,
-    }); // Redirect to home page if it's a regular user
+    });
   } catch (err) {
     console.error("Login Error:", err);
     return res
@@ -72,7 +80,7 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     await pool.query(
-      "INSERT INTO Users (user_name, user_password, user_email) VALUES (?, ?, ?)",
+      "INSERT INTO Users (user_name, user_password, user_email,user_role) VALUES (?, ?, ?,'user')",
       [username, hashedPassword, email]
     );
     return res.json({
@@ -90,6 +98,22 @@ exports.logout = async (req, res) => {
   res.clearCookie("token", { httpOnly: true });
   return res.json({ message: "Logged out successfully" });
 };
+
 exports.checkAuth = async (req, res) => {
-  return res.json({ message: "authenticated", user: req.user });
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ success: true, message: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
+
+    return res.json({ success: true, message: "authenticated", user: decoded });
+  } catch (error) {
+    // If verification fails, send an error response
+    return res.status(401).json({ message: "Invalid token" });
+  }
 };
