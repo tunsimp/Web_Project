@@ -1,22 +1,23 @@
 // controllers/dockerController.js
 
-const Docker = require('dockerode');
-const docker = new Docker({ socketPath: '\\\\.\\pipe\\docker_engine' });
-const net = require('net');
-const pool = require('../config/db');
+const Docker = require("dockerode");
+const docker = new Docker({ socketPath: "\\\\.\\pipe\\docker_engine" });
+const net = require("net");
+const pool = require("../config/db");
 
 // Helper: Check if a port is in use
 async function isPortInUse(port) {
   return new Promise((resolve, reject) => {
-    const server = net.createServer()
-      .on('error', (err) => {
-        if (err.code === 'EADDRINUSE') {
+    const server = net
+      .createServer()
+      .on("error", (err) => {
+        if (err.code === "EADDRINUSE") {
           resolve(true);
         } else {
           reject(err);
         }
       })
-      .on('listening', () => {
+      .on("listening", () => {
         server.close();
         resolve(false);
       })
@@ -26,7 +27,8 @@ async function isPortInUse(port) {
 
 // Helper: Find a random free port
 async function getAvailablePort(minPort = 10000, maxPort = 65535) {
-  let randomPort = Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
+  let randomPort =
+    Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
   while (await isPortInUse(randomPort)) {
     console.log(`Port ${randomPort} is in use, retrying...`);
     randomPort = Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
@@ -62,26 +64,26 @@ async function createContainer(imageName) {
   // Retrieve the exposed ports from the image configuration
   const exposedPorts = await getExposedPorts(imageName);
   const exposedPortKeys = Object.keys(exposedPorts);
-  
+
   if (exposedPortKeys.length === 0) {
     throw new Error("No exposed ports found in the image.");
   }
-  
+
   // Choose one of the exposed ports (for example, the first one)
   const portKey = exposedPortKeys[0];
-  
+
   // Create the container with dynamic host port assignment for the chosen port
   const container = await docker.createContainer({
     Image: imageName,
     HostConfig: {
       PortBindings: {
         [portKey]: [
-          { HostPort: "0" } // Let Docker assign an available host port dynamically
-        ]
-      }
-    }
+          { HostPort: "0" }, // Let Docker assign an available host port dynamically
+        ],
+      },
+    },
   });
-  
+
   // Start the container
   await container.start();
   // Inspect the container to retrieve the dynamically assigned host port
@@ -90,7 +92,7 @@ async function createContainer(imageName) {
   const containerId = container.id;
 
   console.log(`Container created from image ${imageName} on port: ${hostPort}`);
-  
+
   setTimeout(async () => {
     try {
       const container = docker.getContainer(containerId);
@@ -100,13 +102,15 @@ async function createContainer(imageName) {
       } catch (inspectError) {
         // If the container no longer exists, log and exit the TTL callback.
         if (inspectError.statusCode === 404) {
-          console.log(`Container ${containerId} no longer exists; skipping TTL removal.`);
+          console.log(
+            `Container ${containerId} no longer exists; skipping TTL removal.`
+          );
           return;
         }
         // Re-throw other errors
         throw inspectError;
       }
-  
+
       // Only attempt to stop the container if it is still running
       if (containerInfo.State.Running) {
         await deleteContainer(containerId);
@@ -120,11 +124,10 @@ async function createContainer(imageName) {
   return { hostPort, containerId };
 }
 
-
 exports.deleteContainer = async (req, res) => {
-  if (req.session.containerId !== ''){
+  if (req.session.containerId !== "") {
     await deleteContainer(req.session.containerId);
-    req.session.containerId = '';
+    req.session.containerId = "";
   }
   res.send(`
     <html>
@@ -138,25 +141,23 @@ exports.deleteContainer = async (req, res) => {
       </body>
     </html>
   `);
-}
+};
 // Controller method called from the route
 exports.createContainerController = async (req, res) => {
   const { imageName } = req.params;
-  if(req.session.containerId !== ''){
+  if (req.session.containerId !== "") {
     await deleteContainer(req.session.containerId);
   }
   if (!imageName) {
-    return res.status(400).json({ error: 'Image name is required' });
+    return res.status(400).json({ error: "Image name is required" });
   }
 
   try {
-    const {hostPort,containerId} = await createContainer(imageName);
+    const { hostPort, containerId } = await createContainer(imageName);
     req.session.containerId = containerId;
     res.redirect(`http://localhost:${hostPort}`);
   } catch (error) {
-    console.error('Error creating container:', error);
-    res.status(500).json({ error: 'Failed to create or start container' });
+    console.error("Error creating container:", error);
+    res.status(500).json({ error: "Failed to create or start container" });
   }
 };
-
-

@@ -1,0 +1,371 @@
+/* about.css */
+:root {
+  --primary-color: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --text-light: #ffffff;
+  --text-dark: #f8f8f8;
+  --background-dark: #121212;
+  --card-background: #1e1e1e;
+  --border-color: #2e2e2e;
+}
+
+.about-container {
+  background-color: var(--background-dark);
+  color: var(--text-light);
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+}
+
+/* Common styles */
+.highlight {
+  color: var(--primary-color);
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #b0b0b0;
+  max-width: 800px;
+  margin: 0 auto 3rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Button styles */
+.primary-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.primary-button:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Hero section */
+.hero-section {
+  position: relative;
+  padding: 6rem 8%;
+  min-height: 600px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+}
+.hero-section a {
+  text-decoration: none;
+  color: white;
+}
+.hero-background {
+  position: absolute;
+  width: 80%;
+  height: 70%;
+  background-image: url("../assets/hero-background.jpg");
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+  border-radius: 50px; /* Adjust the radius for desired curvature */
+  overflow: hidden;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content {
+  padding: 30px;
+  max-width: 50%;
+  position: relative;
+  z-index: 2;
+  padding-bottom: 4rem; /* Add some padding to ensure text is above the curve */
+}
+.big-title {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #1a0041, #d500fd, #420077, #1a0041);
+  background-size: 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: animate 10s linear infinite;
+}
+
+@keyframes animate {
+  100% {
+    background-position: 400%;
+  }
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: #b0b0b0;
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+}
+
+/* Logo section */
+.logo-section {
+  padding: 3rem 8%;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.logo-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.logo-item {
+  opacity: 0.7;
+  padding: 0 20px;
+  font-weight: 600;
+  color: #888;
+}
+
+/* Features section */
+.features-section {
+  padding: 6rem 8%;
+}
+
+.features-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.feature-card {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  padding: 2rem;
+  flex: 1;
+  transition: transform 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: rgba(139, 92, 246, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.feature-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.feature-description {
+  color: #b0b0b0;
+  line-height: 1.6;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+  margin: 0 15px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.feature {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.checkmark {
+  color: var(--primary-color);
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+/* Video section */
+.video-section {
+  padding: 6rem 8%;
+}
+
+.video-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+.video-container a {
+  text-decoration: none;
+}
+.video-card {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  overflow: hidden;
+  flex: 1;
+  transition: transform 0.3s;
+}
+
+.video-card:hover {
+  transform: translateY(-5px);
+}
+
+.video-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+}
+
+.video-image-1 {
+  background-image: url("../assets/xss.jpg");
+}
+
+.video-image-2 {
+  background-image: url("../assets/sqli.jpg");
+}
+
+.video-image-3 {
+  background-image: url("../assets/ssti.jpg");
+}
+
+.video-date,
+.video-read-time {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #888;
+  margin: 1rem 1rem 0.5rem 1rem;
+}
+
+.video-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0 1rem 1.5rem;
+  line-height: 1.4;
+}
+/* CTA section */
+.cta-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6rem 8%;
+  background-color: #141414;
+  margin: 4rem 0;
+  border-radius: 20px;
+  margin: 4rem 8%;
+  position: relative;
+  overflow: hidden;
+}
+.cta-section a {
+  text-decoration: none;
+  color: white;
+}
+.cta-content {
+  max-width: 50%;
+  position: relative;
+  z-index: 2;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.cta-subtitle {
+  font-size: 1.1rem;
+  color: #b0b0b0;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+.logo-container a {
+  text-decoration: none;
+  color: white;
+}
+/* Responsive */
+@media (max-width: 1024px) {
+  .hero-content,
+  .cta-content {
+    max-width: 60%;
+  }
+
+  .hero-image,
+  .cta-image {
+    width: 35%;
+  }
+
+  .features-container,
+  .video-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section,
+  .cta-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-content,
+  .cta-content {
+    max-width: 100%;
+    margin-bottom: 3rem;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .logo-container {
+    justify-content: center;
+  }
+
+  .logo-item {
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-image {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin-top: 2rem;
+  }
+}
