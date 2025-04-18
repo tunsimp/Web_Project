@@ -31,8 +31,9 @@
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   width: fit-content;
+  display: inline-block; /* Ensure they respect text-align: center */
+  margin: 0.5rem auto; /* Add margin to center and space them */
 }
-
 .lab-title {
   font-size: 1.4rem;
   font-weight: 600;
@@ -69,5 +70,6 @@
   border-radius: 8px;
   position: relative;
   z-index: 10;
+  align-items: center;
   text-align: center;
 }

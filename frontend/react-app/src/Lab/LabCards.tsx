@@ -55,16 +55,20 @@ function LabCards({ lab_name, lab_description, lab_id, difficulty, category }: L
                         <p className="lab-difficulty">{difficulty}</p>
                         <p className="lab-category">{category}</p>
                         <p className="lab-description">{lab_description}</p>
-                        <p className="lab-id">{lab_id}</p>
+                        <p className="lab-id" hidden>{lab_id}</p>
+
+                        <div className="modal-buttons">
+                        <button onClick={handleStart}>Start</button>
+                        <button onClick={handleStop}>Stop</button>
+                        </div>
                         <input
                             type="text"
                             value={textValue}
                             onChange={(e) => setTextValue(e.target.value)}
                             placeholder="Enter text"
                         />
-                        <button onClick={handleStart}>Start</button>
-                        <button onClick={handleStop}>Stop</button>
                         <button onClick={handleSubmit}>Submit</button>
+
                     </div>
                 </div>
             </div>
