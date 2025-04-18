@@ -4,6 +4,6 @@ const Home = () => {
     return (
         <>
         <Navbar/>
-        <h1>This is lab page</h1></>
+        <h1>This is Homepage</h1></>
 )}
 export default Home;

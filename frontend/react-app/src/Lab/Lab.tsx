@@ -1,9 +1,62 @@
+import axios from "axios"
+import { useState, useEffect } from "react"
 import Navbar from "../NavBar/NavBar"
+import "./Lab.css"
+import LabCards from "./LabCards"
 
 const Lab = () => {
+    const [labs, setLabs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [modal,setModal] = useState(false);
+    const toggleModal = () => {
+        setModal(!modal);
+    }
+    useEffect(() => {
+        const fetchLabs = async () => {
+            try {
+                const response = await axios.get("http://localhost:5000/api/route/labs", { withCredentials: true });
+                
+                // Convert the object of labs to an array
+                const labsArray = Object.keys(response.data).map(key => ({
+                    lab_id: key,
+                    ...response.data[key]
+                }));
+                
+                setLabs(labsArray);
+                setLoading(false);
+            } catch (err) {
+                console.error("Error fetching labs:", err);
+                setError("Failed to load labs. Please try again later.");
+                setLoading(false);
+            }
+        };
+
+        fetchLabs();
+    }, []);
+
+    if (loading) return <div>Loading labs...</div>;
+    if (error) return <div>{error}</div>;
+
     return (
         <>
-        <Navbar/>
-        <h1>This is home page</h1></>
-)}
+            <Navbar/>
+            <div className="labs-section">        
+                <div className="labs-container" >
+                    {labs.map((lab) => (
+                        <LabCards 
+                            key={lab.lab_id}
+                            lab_name={lab.lab_name}
+                            lab_description={lab.lab_description}
+                            lab_id={lab.lab_id}
+                            difficulty={lab.difficulty}
+                            category={lab.category}
+                        />
+                    ))}
+                </div>
+            </div>
+        </>
+    );
+};
+
 export default Lab;
