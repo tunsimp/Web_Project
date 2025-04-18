@@ -98,7 +98,7 @@ const About = () => {
         <div className="logo-container">
           <div className="logo-item"><a href="/">Discord</a></div>
           <div className="logo-item"><a href="/">Linkedin</a></div>
-          <div className="logo-item"><a href="/">Email</a></div>
+          <div className="logo-item"><a href="/">Youtube</a></div>
         </div>
       </div>
     </div>

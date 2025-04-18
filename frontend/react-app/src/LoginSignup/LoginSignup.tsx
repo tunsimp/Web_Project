@@ -53,7 +53,7 @@ const LoginSignup = () => {
       });
       console.log('Backend response:', response.data); // Debug log
 
-      if (response.data.message === 'valid') {
+      if (response.data.success) {
         setFormData({ username: '', email: '', password: '', confirmPassword: '' });
         if (isLogin) {
           // Successful login: redirect to /home

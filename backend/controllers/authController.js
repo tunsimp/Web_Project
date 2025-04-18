@@ -6,9 +6,10 @@ exports.login = async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username and password are required" });
+    return res.status(400).json({
+      success: false,
+      message: "Username and password are required",
+    });
   }
 
   try {
@@ -20,7 +21,10 @@ exports.login = async (req, res) => {
       rows.length === 0 ||
       !(await bcrypt.compare(password, rows[0].user_password))
     ) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password",
+      });
     }
 
     console.log("Rows:", rows);
@@ -38,10 +42,16 @@ exports.login = async (req, res) => {
     }
     console.log("Token:", token);
     res.cookie("token", token); // Set the token in a cookie
-    return res.json({ message: "valid" }); // Redirect to home page if it's a regular user
+    return res.json({
+      success: true,
+      message: "Login successful",
+      token: token,
+    }); // Redirect to home page if it's a regular user
   } catch (err) {
     console.error("Login Error:", err);
-    return res.status(500).send("Internal Server Error");
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server error" });
   }
 };
 
@@ -54,7 +64,10 @@ exports.register = async (req, res) => {
     ]);
 
     if (rows.length > 0) {
-      return res.json({ message: "Username already taken" });
+      return res.json({
+        success: false,
+        message: "Username is already taken",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,12 +76,19 @@ exports.register = async (req, res) => {
       [username, hashedPassword, email]
     );
     return res.json({
-      message: "valid",
+      success: true,
+      message: "Registration successful",
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).send("Internal Server Error");
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server error" });
   }
+};
+exports.logout = async (req, res) => {
+  res.clearCookie("token", { httpOnly: true });
+  return res.json({ message: "Logged out successfully" });
 };
 exports.checkAuth = async (req, res) => {
   return res.json({ message: "authenticated", user: req.user });

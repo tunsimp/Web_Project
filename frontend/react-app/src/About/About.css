@@ -236,6 +236,8 @@
   overflow: hidden;
   flex: 1;
   transition: transform 0.3s;
+  text-align: center;
+  width: 380px;
 }
 
 .video-card:hover {
@@ -258,14 +260,6 @@
 
 .video-image-3 {
   background-image: url("../assets/ssti.jpg");
-}
-
-.video-date,
-.video-read-time {
-  display: inline-block;
-  font-size: 0.8rem;
-  color: #888;
-  margin: 1rem 1rem 0.5rem 1rem;
 }
 
 .video-title {
