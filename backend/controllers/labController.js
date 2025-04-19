@@ -14,7 +14,6 @@ exports.labs = async (req, res) => {
 
     console.log("Rows:", rows);
 
-    // Use labinfo_id instead of lab_id
     const labs = {};
     for (const row of rows) {
       labs[row.labinfo_id] = {
@@ -26,7 +25,6 @@ exports.labs = async (req, res) => {
       };
     }
 
-    // Return consistent response format for both admin and regular users
     return res.send(labs);
   } catch (err) {
     console.error("Retrieving Labs Error:", err);
@@ -36,12 +34,42 @@ exports.labs = async (req, res) => {
   }
 };
 
-// Controller function
-exports.verifyLab = async (req, res) => {
-  // For path parameters
-  // const { labinfo_id, flag } = req.params;
+exports.getLabName = async (req, res, next) => {
+  const { labinfo_id } = req.body;
 
-  // For query parameters
+  // Validate labinfo_id
+  if (!labinfo_id) {
+    return res.status(400).json({
+      success: false,
+      message: "labinfo_id is required",
+    });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      "SELECT lab_name FROM labinfo WHERE labinfo_id = ?",
+      [labinfo_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Lab not found",
+      });
+    }
+
+    req.labName = rows[0].lab_name; // Store lab_name in req.labName
+    next(); // Pass control to the next middleware/controller
+  } catch (err) {
+    console.error("Error retrieving lab name:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.verifyFlag = async (req, res) => {
   const { labinfo_id, flag } = req.query;
 
   try {

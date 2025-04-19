@@ -16,15 +16,18 @@ router.get("/home", checkAuth, (req, res) => {
 router.get("/labs", labController.labs); // Call the labs controller
 // Route that calls our Docker controller
 router.get(
-  "/verify-lab", // The query parameters shouldn't be in the route definition
-  labController.verifyLab
+  "/verify-flag", // The query parameters shouldn't be in the route definition
+  labController.verifyFlag
 );
 
-router.get(
-  "/create-container/:imageName",
+router.post(
+  "/create-container",
   checkAuth,
+  labController.getLabName,
   createContainerController
 );
+
+router.post("/getlabname", labController.getLabName);
 
 router.get("/delete-container", deleteContainer);
 module.exports = router;

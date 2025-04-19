@@ -10,6 +10,7 @@ const checkAuth = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
     req.user_name = decoded.username;
     req.user_id = decoded.uid;
+    req.containerId = decoded.containerId;
     next();
   } catch (err) {
     console.error("Token verification failed:", err);

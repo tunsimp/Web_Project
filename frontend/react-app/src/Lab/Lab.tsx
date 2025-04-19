@@ -8,10 +8,7 @@ const Lab = () => {
     const [labs, setLabs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [modal,setModal] = useState(false);
-    const toggleModal = () => {
-        setModal(!modal);
-    }
+
     useEffect(() => {
         const fetchLabs = async () => {
             try {
@@ -31,7 +28,6 @@ const Lab = () => {
                 setLoading(false);
             }
         };
-
         fetchLabs();
     }, []);
 

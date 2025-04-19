@@ -7,9 +7,6 @@ const indexRoutes = require("./routes/indexRoutes");
 const checkAuth = require("./middleware/checkAuth");
 
 const app = express();
-
-// Set up CORS options
-
 // Enable CORS
 app.use(
   cors({

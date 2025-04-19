@@ -12,16 +12,24 @@
 
 .lab-card {
   background-color: var(--card-background);
-  border-radius: 12px;
+  border-radius: 40px;
   padding: 2rem;
   flex: 0 0 calc(33.333% - 1.4rem); /* Adjust calculation to account for gaps */
   max-width: calc(33.333% - 1.4rem);
   box-sizing: border-box;
-  margin-bottom: 2rem; /* Add margin bottom for spacing between rows */
+  margin-bottom: 2rem;
   transition: transform 0.3s;
 }
+
 .lab-card:hover {
   transform: translateY(-5px);
+}
+.lab-card,
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers content horizontally */
+  text-align: center;
 }
 .lab-difficulty,
 .lab-category {
@@ -31,8 +39,7 @@
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   width: fit-content;
-  display: inline-block; /* Ensure they respect text-align: center */
-  margin: 0.5rem auto; /* Add margin to center and space them */
+  margin: 0.3rem 0; /* Adjusted margin to separate vertically */
 }
 .lab-title {
   font-size: 1.4rem;
@@ -67,9 +74,52 @@
   max-width: 400px;
   margin: 10% auto;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 40px;
   position: relative;
   z-index: 10;
   align-items: center;
   text-align: center;
+}
+
+.modal-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.start-button {
+  margin-right: 0.5rem; /* Adds space to the right of the Start button */
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+}
+
+.stop-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #f44336;
+  color: white;
+  cursor: pointer;
+}
+
+.text-input {
+  width: 300px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-top: 1rem;
+}
+
+.submit-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #d500fd;
+  color: white;
+  cursor: pointer;
+  margin-top: 1rem;
 }

@@ -17,7 +17,7 @@ CREATE TABLE LabInfo (
   labinfo_id INT AUTO_INCREMENT PRIMARY KEY,
   lab_name VARCHAR(100) NOT NULL,
   lab_description TEXT,
-  difficulty ENUM('beginner', 'intermediate', 'advanced') NOT NULL,
+  difficulty ENUM('Beginner', 'Intermediate', 'Advanced') NOT NULL,
   category VARCHAR(50),
   flag varchar(200) NOT NULL,
   is_active BOOLEAN DEFAULT TRUE

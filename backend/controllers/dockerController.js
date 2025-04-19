@@ -38,7 +38,7 @@ async function getAvailablePort(minPort = 10000, maxPort = 65535) {
 
 async function deleteContainer(containerId) {
   if (!containerId) {
-    throw new Error("Container ID is required");
+    console.log("No container ID provided for deletion.");
   }
   const container = docker.getContainer(containerId);
   await container.stop();
@@ -125,9 +125,9 @@ async function createContainer(imageName) {
 }
 
 exports.deleteContainer = async (req, res) => {
-  if (req.session.containerId !== "") {
-    await deleteContainer(req.session.containerId);
-    req.session.containerId = "";
+  if (req.cookies.containerId !== "") {
+    await deleteContainer(req.cookies.containerId);
+    req.cookies.containerId = "";
   }
   res.send(`
     <html>
@@ -144,20 +144,35 @@ exports.deleteContainer = async (req, res) => {
 };
 // Controller method called from the route
 exports.createContainerController = async (req, res) => {
-  const { imageName } = req.params;
-  if (req.session.containerId !== "") {
-    await deleteContainer(req.session.containerId);
-  }
-  if (!imageName) {
-    return res.status(400).json({ error: "Image name is required" });
+  const labName = req.labName; // Set by getLabName
+  const existingContainerId = req.containerId; // Set by checkAuth
+
+  if (!labName) {
+    return res.status(400).json({ error: "Lab name is required" });
   }
 
   try {
-    const { hostPort, containerId } = await createContainer(imageName);
-    req.session.containerId = containerId;
-    res.redirect(`http://localhost:${hostPort}`);
+    if (existingContainerId && existingContainerId !== "") {
+      await deleteContainer(existingContainerId);
+    }
+
+    const { hostPort, containerId: newContainerId } = await createContainer(
+      labName
+    );
+
+    // Set the containerId as a cookie using res.cookie
+    res.cookie("containerId", newContainerId, { httpOnly: true });
+    const lab_link = `http://localhost:${hostPort}`;
+    // Return JSON instead of redirecting
+    return res.status(200).json({
+      success: true,
+      lab_link,
+      containerId: newContainerId,
+    });
   } catch (error) {
-    console.error("Error creating container:", error);
-    res.status(500).json({ error: "Failed to create or start container" });
+    console.error("Error creating container:", error.message);
+    return res
+      .status(500)
+      .json({ error: "Failed to create or start container" });
   }
 };
