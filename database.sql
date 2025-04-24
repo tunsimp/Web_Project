@@ -65,35 +65,34 @@ CREATE TABLE UserLessonProgress (
 );
 
 -- Insert some sample data for testing
-select * from labinfo;
-/*
+SELECT * FROM labinfo;
+
 INSERT INTO LabInfo
   (lab_name, lab_description, difficulty, category,flag, is_active)
 VALUES
   (
-    'XSS', -- lab_name
+    'xss', -- lab_name
     'Learn about Cross-Site Scripting vulnerabilities. This lab covers reflected, stored, and DOM-based XSS attacks.', -- lab_description
     'intermediate', -- difficulty
     'Web Security', -- category
-    'xss_flag',
+    'TS{xss_flag}',
     TRUE -- is_active
   ),
   (
-    'SSTI', -- lab_name
+    'ssti', -- lab_name
     'Explore Server-Side Template Injection vulnerabilities. Practice identifying and exploiting SSTI in common template engines.', -- lab_description
     'advanced', -- difficulty
     'Web Security', -- category
-	'ssti_flag',
+	'TS{ssti_flag}',
     TRUE -- is_active
   ),
   (
-    'SQLi', -- lab_name
+    'sqli', -- lab_name
     'Understand the fundamentals of SQL Injection. This beginner lab covers basic union-based and error-based injection techniques.', -- lab_description
     'beginner', -- difficulty
     'Injection Attacks', -- category
-	'sqli_flag',
+	'TS{sqli_flag}',
     TRUE -- is_active
   );
 -- Sample users
-*/
 

@@ -47,6 +47,7 @@ const Lab = () => {
                             lab_id={lab.lab_id}
                             difficulty={lab.difficulty}
                             category={lab.category}
+                            lab_link={lab.lab_link || ""}
                         />
                     ))}
                 </div>

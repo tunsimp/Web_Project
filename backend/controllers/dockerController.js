@@ -1,5 +1,5 @@
 // controllers/dockerController.js
-
+const { signToken, verifyToken } = require("../utils/jwt"); // Adjust path as needed
 const Docker = require("dockerode");
 const docker = new Docker({ socketPath: "\\\\.\\pipe\\docker_engine" });
 const net = require("net");
@@ -39,11 +39,18 @@ async function getAvailablePort(minPort = 10000, maxPort = 65535) {
 async function deleteContainer(containerId) {
   if (!containerId) {
     console.log("No container ID provided for deletion.");
+    return { success: false, error: "No container ID provided" };
   }
-  const container = docker.getContainer(containerId);
-  await container.stop();
-  await container.remove();
-  console.log(`Container ${containerId} deleted`);
+  try {
+    const container = docker.getContainer(containerId);
+    await container.stop();
+    await container.remove();
+    console.log(`Container ${containerId} deleted`);
+    return { success: true };
+  } catch (error) {
+    console.error(`Error deleting container ${containerId}:`, error.message);
+    return { success: false, error: error.message };
+  }
 }
 
 async function getExposedPorts(imageName) {
@@ -120,28 +127,44 @@ async function createContainer(imageName) {
     } catch (err) {
       console.error(`Error handling TTL for container ${containerId}:`, err);
     }
-  }, 30000); // TTL of 30 seconds
+  }, 3600000); // TTL of 30 seconds
   return { hostPort, containerId };
 }
 
 exports.deleteContainer = async (req, res) => {
-  if (req.cookies.containerId !== "") {
-    await deleteContainer(req.cookies.containerId);
-    req.cookies.containerId = "";
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
   }
-  res.send(`
-    <html>
-      <head>
-        <script>
-          window.close();
-        </script>
-      </head>
-      <body>
-        <p>Container deleted. Closing window...</p>
-      </body>
-    </html>
-  `);
+
+  try {
+    // Verify and decode the token to get the containerId
+    const decoded = verifyToken(token);
+    if (!decoded || !decoded.containerId || decoded.containerId === "") {
+      return res.status(400).json({ error: "No containerId found in token" });
+    }
+
+    const containerId = decoded.containerId;
+
+    // Delete the container
+    await deleteContainer(containerId);
+
+    // Create a new token with containerId set to an empty string
+    const newToken = signToken({
+      username: decoded.username,
+      uid: decoded.uid,
+      role: decoded.role,
+      containerId: "", // Reset containerId
+    });
+
+    // Set the new token in the cookies
+    res.cookie("token", newToken, { httpOnly: true });
+  } catch (error) {
+    console.error("Error deleting container:", error.message);
+    return res.status(500).json({ error: "Failed to delete container" });
+  }
 };
+
 // Controller method called from the route
 exports.createContainerController = async (req, res) => {
   const labName = req.labName; // Set by getLabName
@@ -160,14 +183,35 @@ exports.createContainerController = async (req, res) => {
       labName
     );
 
-    // Set the containerId as a cookie using res.cookie
-    res.cookie("containerId", newContainerId, { httpOnly: true });
+    // Extract the current token from the request cookies
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    // Verify and decode the current token (assuming verifyToken is defined elsewhere)
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Create a new token with the user data and new containerId (assuming signToken is defined elsewhere)
+    const newToken = signToken({
+      username: decoded.username,
+      uid: decoded.uid,
+      role: decoded.role,
+      containerId: newContainerId,
+    });
+
+    // Set the new token as a cookie
+    res.cookie("token", newToken, { httpOnly: true });
+
     const lab_link = `http://localhost:${hostPort}`;
-    // Return JSON instead of redirecting
+    // Return JSON with the new token and container details
     return res.status(200).json({
       success: true,
       lab_link,
-      containerId: newContainerId,
+      token: newToken,
     });
   } catch (error) {
     console.error("Error creating container:", error.message);

@@ -5,11 +5,11 @@
   align-items: center;
   width: auto;
   max-width: 800px;
-  margin: 120px auto; /* Keep top margin */
+  margin: 120px auto;
   position: relative;
   overflow: hidden;
   border-radius: 15px;
-  padding-bottom: 50px; /* Add padding at the bottom */
+  padding-bottom: 50px;
 }
 .background-wrapper {
   position: absolute;

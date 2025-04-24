@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 const pool = require("../config/db"); // Import database configuration
-const jwt = require("jsonwebtoken");
-
+const { signToken, verifyToken } = require("../utils/jwt"); // Adjust path as needed
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
@@ -34,16 +33,12 @@ exports.login = async (req, res) => {
     const containerId = "";
 
     // Include user_role in the token payload
-    const token = jwt.sign(
-      {
-        username: rows[0].user_name,
-        uid,
-        role, // Add the role to the token
-        containerId,
-      },
-      process.env.JWT_SECRET || "JWT_SECRET", // Use environment variable
-      { expiresIn: "1h" }
-    );
+    const token = signToken({
+      username: rows[0].user_name,
+      uid,
+      role,
+      containerId,
+    });
 
     console.log("Token:", token);
     res.cookie("token", token, { httpOnly: true }); // Set the token in a cookie
@@ -109,8 +104,7 @@ exports.checkAuth = async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
-
+    const decoded = verifyToken(token);
     return res.json({ success: true, message: "authenticated", user: decoded });
   } catch (error) {
     // If verification fails, send an error response

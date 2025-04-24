@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const checkAuth = require("../middleware/checkAuth");
 const labController = require("../controllers/labController");
+const userController = require("../controllers/userController");
 const {
   createContainerController,
   deleteContainer,
@@ -27,7 +28,9 @@ router.post(
   createContainerController
 );
 
-router.post("/getlabname", labController.getLabName);
+router.post("/getlabname", checkAuth, labController.getLabName);
 
-router.get("/delete-container", deleteContainer);
+router.post("/delete-container", checkAuth, deleteContainer);
+router.get("/account", checkAuth, userController.getUser); // Call the getAccount controller
+router.post("/update-account", checkAuth, userController.updateUser); // Call the updateAccount controller
 module.exports = router;

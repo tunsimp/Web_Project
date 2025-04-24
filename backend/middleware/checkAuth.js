@@ -1,5 +1,5 @@
 // middleware/checkAuth.js
-const jwt = require("jsonwebtoken");
+const { verifyToken } = require("../utils/jwt"); // Adjust path as needed
 
 const checkAuth = (req, res, next) => {
   const token = req.cookies.token;
@@ -7,7 +7,7 @@ const checkAuth = (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "JWT_SECRET");
+    const decoded = verifyToken(token);
     req.user_name = decoded.username;
     req.user_id = decoded.uid;
     req.containerId = decoded.containerId;
