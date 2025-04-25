@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const bcrypt = require("bcryptjs");
 
 exports.getUser = async (req, res) => {
   const user_id = req.user_id; // Access req.user_id set by checkAuth
@@ -39,6 +40,7 @@ exports.getUser = async (req, res) => {
     });
   }
 };
+
 exports.updateUser = async (req, res) => {
   const user_id = req.user_id; // Access req.user_id set by checkAuth
   const { user_name, user_email, new_password } = req.body;
@@ -98,7 +100,6 @@ exports.updateUser = async (req, res) => {
 
     // Handle password update if provided
     if (new_password) {
-      const bcrypt = require("bcrypt");
       const hashedPassword = await bcrypt.hash(new_password, 10);
 
       updateFields.push("user_password = ?");
