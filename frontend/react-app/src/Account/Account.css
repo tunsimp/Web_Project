@@ -1,3 +1,4 @@
+/* Account page CSS with left-aligned labels in two columns */
 .account-section {
   display: flex;
   flex-direction: column;
@@ -9,47 +10,40 @@
   border-radius: 8px;
 }
 
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0;
-  color: #333;
-}
-
 .account-container {
   width: 100%;
   background-color: #1e1e3f;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .account-title {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-align: center;
-  font-size: 50px;
+  font-size: 36px;
   font-weight: 600;
   color: #ffffff;
 }
 
 .form-group {
-  margin-bottom: 15px;
-  display: flex;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 35% 65%;
   align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .account-label {
-  flex: 0 0 30%;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: #ffffff;
+  text-align: left;
   padding-right: 15px;
-  text-align: right;
 }
 
 .account-label::after {
@@ -58,14 +52,14 @@
 }
 
 .account-input {
-  flex: 0 0 70%;
-  max-width: 300px;
-  padding: 8px;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f9f9f9;
+  border-radius: 6px;
+  background-color: #434459;
   color: #333;
+  width: 100%;
+  color: #ffffff;
 }
 
 .account-input[readonly] {
@@ -74,28 +68,36 @@
 }
 
 .error-message {
-  color: #ff0000;
-  font-size: 14px;
-  margin-bottom: 15px;
+  color: #ff6b6b;
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
 }
 
 .success-message {
-  color: #00ff00;
-  font-size: 14px;
-  margin-bottom: 15px;
+  color: #4ade80;
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Center submit button and fix styling */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 30px;
 }
 
 .submit-button {
-  margin-top: 15px;
-  margin-left: 30%; /* Aligns with input fields */
-  padding: 8px 16px;
-  background-color: #4a4a8a;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.submit-button:hover {
-  background-color: #3a3a6a;
+  margin: auto;
+  width: 100px;
+  height: 30px;
+  background-color: rgb(255, 255, 255);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #24243c;
 }

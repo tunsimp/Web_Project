@@ -114,7 +114,7 @@ const handleStop = () => {
                             </p>
                         )}
                         <p className="lab-id" hidden>{lab_id}</p>
-                        <div className="modal-button">
+                        <div className="modal-buttons">
                         <button className="start-button" onClick={handleStart}>Start</button>
                         <button className="stop-button" onClick={handleStop}>Stop</button>
                         </div>
@@ -126,7 +126,7 @@ const handleStop = () => {
                             onChange={(e) => setTextValue(e.target.value)}
                             placeholder="TS{FLAG}"
                         />
-                        <button className="submit-button" onClick={handleSubmit}>Submit</button>
+                        <button className="flag-submit-button" onClick={handleSubmit}>Submit</button>
                         </div>
                     </div>
                 </div>

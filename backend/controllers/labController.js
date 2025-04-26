@@ -12,8 +12,6 @@ exports.labs = async (req, res) => {
       });
     }
 
-    console.log("Rows:", rows);
-
     const labs = {};
     for (const row of rows) {
       labs[row.labinfo_id] = {
@@ -59,6 +57,7 @@ exports.getLabName = async (req, res, next) => {
     }
 
     req.labName = rows[0].lab_name; // Store lab_name in req.labName
+    req.labinfo_id = labinfo_id;
     next(); // Pass control to the next middleware/controller
   } catch (err) {
     console.error("Error retrieving lab name:", err);
@@ -86,7 +85,6 @@ exports.verifyFlag = async (req, res) => {
     }
 
     const lab = rows[0]; // Get the first (and should be only) lab
-    console.log("Lab data:", lab);
 
     // Check if the flag matches
     if (flag === lab.flag) {

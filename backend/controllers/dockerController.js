@@ -3,7 +3,7 @@ const { signToken, verifyToken } = require("../utils/jwt"); // Adjust path as ne
 const Docker = require("dockerode");
 const docker = new Docker({ socketPath: "\\\\.\\pipe\\docker_engine" });
 const net = require("net");
-const pool = require("../config/db");
+const LabModel = require("../models/LabModel"); // Import the new model
 
 // Helper: Check if a port is in use
 async function isPortInUse(port) {
@@ -46,6 +46,9 @@ async function deleteContainer(containerId) {
     await container.stop();
     await container.remove();
     console.log(`Container ${containerId} deleted`);
+    // Update the Labs table using the model
+    await LabModel.updateLabInfoOnDelete(containerId);
+
     return { success: true };
   } catch (error) {
     console.error(`Error deleting container ${containerId}:`, error.message);
@@ -67,11 +70,10 @@ async function getExposedPorts(imageName) {
 }
 
 // (Optional) Service function if you want to keep container creation separate
-async function createContainer(imageName) {
+async function createContainer(imageName, userId, labinfoId) {
   // Retrieve the exposed ports from the image configuration
   const exposedPorts = await getExposedPorts(imageName);
   const exposedPortKeys = Object.keys(exposedPorts);
-
   if (exposedPortKeys.length === 0) {
     throw new Error("No exposed ports found in the image.");
   }
@@ -98,6 +100,8 @@ async function createContainer(imageName) {
   const hostPort = info.NetworkSettings.Ports[portKey][0].HostPort;
   const containerId = container.id;
 
+  // Save to Labs table using the model
+  await LabModel.saveLabInfo(userId, labinfoId, containerId);
   console.log(`Container created from image ${imageName} on port: ${hostPort}`);
 
   setTimeout(async () => {
@@ -169,7 +173,8 @@ exports.deleteContainer = async (req, res) => {
 exports.createContainerController = async (req, res) => {
   const labName = req.labName; // Set by getLabName
   const existingContainerId = req.containerId; // Set by checkAuth
-
+  const labinfoId = req.labinfo_id; // Set by getLabName
+  const user_id = req.user_id; // Set by checkAuth
   if (!labName) {
     return res.status(400).json({ error: "Lab name is required" });
   }
@@ -180,7 +185,9 @@ exports.createContainerController = async (req, res) => {
     }
 
     const { hostPort, containerId: newContainerId } = await createContainer(
-      labName
+      labName,
+      user_id,
+      labinfoId
     );
 
     // Extract the current token from the request cookies

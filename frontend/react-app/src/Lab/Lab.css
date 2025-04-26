@@ -81,7 +81,7 @@
   text-align: center;
 }
 
-.modal-button {
+.modal-buttons {
   display: flex;
   justify-content: center;
   margin-top: 1rem;
@@ -93,6 +93,8 @@
   border: none;
   border-radius: 8px;
   background-color: #4caf50;
+  font-size: 15px;
+  font-weight: bold;
   color: white;
   cursor: pointer;
 }
@@ -102,24 +104,35 @@
   border: none;
   border-radius: 8px;
   background-color: #f44336;
+  font-size: 15px;
+  font-weight: bold;
   color: white;
   cursor: pointer;
+}
+
+.modal-submit {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch; /* Change from center to stretch */
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Make sure the button has no unexpected padding that might push content down */
+.flag-submit-button {
+  width: 100px;
+  background-color: rgb(255, 255, 255);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #24243c;
 }
 
 .text-input {
-  width: 300px;
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-top: 1rem;
-}
-
-.submit-button {
-  padding: 0.5rem 1rem;
+  height: 30px;
   border: none;
-  border-radius: 8px;
-  background-color: #d500fd;
-  color: white;
-  cursor: pointer;
-  margin-top: 1rem;
+  padding-left: 5px;
+  font-size: 15px;
+  outline: none;
+  color: rgb(255, 255, 255);
 }

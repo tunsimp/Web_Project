@@ -19,6 +19,13 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [initialValues, setInitialValues] = useState({
+    user_name: "",
+    user_email: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [hasChanges, setHasChanges] = useState(false);
 
   const fetchUserData = async () => {
     try {
@@ -27,10 +34,18 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
       });
       console.log("User data:", response.data);
       if (response.data.success) {
-        setUserData({
+        const fetchedData = {
           user_id: response.data.user.user_id,
           user_name: response.data.user.user_name,
           user_email: response.data.user.user_email,
+        };
+        setUserData(fetchedData);
+        // Set initial values after fetching user data
+        setInitialValues({
+          user_name: fetchedData.user_name,
+          user_email: fetchedData.user_email,
+          newPassword: "",
+          confirmPassword: "",
         });
         setError("");
       }
@@ -39,6 +54,16 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
       setError(error.response?.data?.message || "Failed to fetch user data");
     }
   };
+
+  // Detect changes in input fields
+  useEffect(() => {
+    const changesDetected =
+      userData.user_name !== initialValues.user_name ||
+      userData.user_email !== initialValues.user_email ||
+      newPassword !== initialValues.newPassword ||
+      confirmPassword !== initialValues.confirmPassword;
+    setHasChanges(changesDetected);
+  }, [userData, newPassword, confirmPassword, initialValues]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,10 +76,6 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
         setError("Passwords do not match");
         return;
       }
-      if (newPassword.length < 8) {
-        setError("Password must be at least 8 characters long");
-        return;
-      }
     }
 
     try {
@@ -63,7 +84,7 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
         {
           user_name: userData.user_name,
           user_email: userData.user_email,
-          new_password: newPassword || undefined, // Only send if provided
+          new_password: newPassword || undefined,
         },
         { withCredentials: true }
       );
@@ -72,7 +93,14 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
         setSuccess("Account updated successfully");
         setNewPassword("");
         setConfirmPassword("");
-        // Optionally refetch user data to ensure UI is in sync
+        // Update initial values after successful submission
+        setInitialValues({
+          user_name: userData.user_name,
+          user_email: userData.user_email,
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setHasChanges(false); // Reset changes after submission
         await fetchUserData();
       }
     } catch (error) {
@@ -133,9 +161,13 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
                 placeholder="Confirm new password"
               />
             </div>
-            <button type="submit" className="submit-button" onClick={handleSubmit}>
-              Submit
-            </button>
+            {hasChanges && (
+              <div className="form-actions">
+                <button type="submit" className="submit-button">
+                  Update
+                </button>
+              </div>
+            )}
           </form>
         </div>
       </div>

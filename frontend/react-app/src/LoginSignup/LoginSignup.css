@@ -80,9 +80,9 @@
   margin-bottom: 25px;
 }
 .buttons .text {
-  text-align: center; /* Center the "Don't have an account?" text */
+  text-align: center;
   font-size: 16px;
-  margin-top: 15px; /* Space between button and text */
+  margin-top: 15px;
 }
 .inputs button {
   margin: auto;
