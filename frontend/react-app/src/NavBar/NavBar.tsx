@@ -33,10 +33,10 @@ const Navbar = () => {
 
   return (
     <header className="header">
-      <a href="/home" className="logo">Logo</a>
+      <a href="/home" className="logo">TSAcademy</a>
       <nav className="navbar">
         {role === 'admin' && <a href="/admin">Dashboard</a>}
-        <a href="/lab">Labs</a>
+        <a href="/labs">Labs</a>
         <a href="/paths">Learning Paths</a>
         <a href="/account">Account</a>
         <a href="#" onClick={handleLogout}>Logout</a>

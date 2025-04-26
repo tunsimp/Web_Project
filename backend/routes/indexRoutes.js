@@ -14,12 +14,8 @@ router.get("/home", checkAuth, (req, res) => {
   res.json({ message: "valid", user_name: req.user_name });
 });
 
-router.get("/labs", labController.labs); // Call the labs controller
-// Route that calls our Docker controller
-router.get(
-  "/verify-flag", // The query parameters shouldn't be in the route definition
-  labController.verifyFlag
-);
+router.get("/labs", checkAuth, labController.labsWithStatus); // Call the labs controller
+router.get("/verify-flag", checkAuth, labController.verifyFlag);
 
 router.post(
   "/create-container",

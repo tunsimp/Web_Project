@@ -1,41 +1,29 @@
-const pool = require("../config/db"); // Import database configuration
-const jwt = require("jsonwebtoken");
+const LabModel = require("../models/LabModel");
 
 exports.labs = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM labinfo;");
+    const labs = await LabModel.getAllLabs();
 
-    if (rows.length === 0) {
-      return res.status(401).json({
+    if (Object.keys(labs).length === 0) {
+      return res.status(404).json({
         success: false,
         message: "No labs found",
       });
     }
 
-    const labs = {};
-    for (const row of rows) {
-      labs[row.labinfo_id] = {
-        lab_name: row.lab_name,
-        lab_description: row.lab_description,
-        difficulty: row.difficulty,
-        category: row.category,
-        is_active: row.is_active,
-      };
-    }
-
     return res.send(labs);
   } catch (err) {
     console.error("Retrieving Labs Error:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal Server error" });
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server error",
+    });
   }
 };
 
 exports.getLabName = async (req, res, next) => {
   const { labinfo_id } = req.body;
 
-  // Validate labinfo_id
   if (!labinfo_id) {
     return res.status(400).json({
       success: false,
@@ -44,21 +32,18 @@ exports.getLabName = async (req, res, next) => {
   }
 
   try {
-    const [rows] = await pool.query(
-      "SELECT lab_name FROM labinfo WHERE labinfo_id = ?",
-      [labinfo_id]
-    );
+    const labName = await LabModel.getLabNameById(labinfo_id);
 
-    if (rows.length === 0) {
+    if (!labName) {
       return res.status(404).json({
         success: false,
         message: "Lab not found",
       });
     }
 
-    req.labName = rows[0].lab_name; // Store lab_name in req.labName
+    req.labName = labName;
     req.labinfo_id = labinfo_id;
-    next(); // Pass control to the next middleware/controller
+    next();
   } catch (err) {
     console.error("Error retrieving lab name:", err);
     return res.status(500).json({
@@ -70,38 +55,67 @@ exports.getLabName = async (req, res, next) => {
 
 exports.verifyFlag = async (req, res) => {
   const { labinfo_id, flag } = req.query;
+  const userId = req.user_id; // Assuming set by authentication middleware
+
+  // Check if user is authenticated
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "User not authenticated",
+    });
+  }
 
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM labinfo WHERE labinfo_id = ?",
-      [labinfo_id]
-    );
+    const result = await LabModel.verifyLabFlag(labinfo_id, flag);
 
-    if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Lab not found",
-      });
-    }
+    if (result.success) {
+      // Record the lab completion
 
-    const lab = rows[0]; // Get the first (and should be only) lab
-
-    // Check if the flag matches
-    if (flag === lab.flag) {
+      await LabModel.recordLabCompletion(userId, labinfo_id);
       return res.json({
         success: true,
-        message: "Correct flag! Lab completed!",
+        message: result.message, // e.g., "Correct flag! Lab completed!"
       });
     } else {
       return res.json({
         success: false,
-        message: "Incorrect flag. Try again!",
+        message: result.message, // e.g., "Incorrect flag!"
       });
     }
   } catch (err) {
     console.error("Flag verification error:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal Server error" });
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server error",
+    });
+  }
+};
+exports.labsWithStatus = async (req, res) => {
+  try {
+    const userId = req.user_id; // From auth middleware
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    const labs = await LabModel.getAllLabsWithCompletionStatus(userId);
+
+    if (Object.keys(labs).length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No labs found",
+      });
+    }
+
+    return res.send(labs);
+  } catch (err) {
+    console.error("Retrieving Labs With Status Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server error",
+    });
   }
 };

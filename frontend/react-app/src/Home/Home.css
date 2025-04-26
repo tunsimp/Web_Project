@@ -1,0 +1,41 @@
+.home-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.welcome-message {
+  font-size: 2.5rem;
+  color: #ffffff;
+  margin-bottom: 20px;
+}
+
+.summary {
+  font-size: 1.2rem;
+  color: #ffffff;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.cta button {
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cta button:hover {
+  background-color: #0056b3;
+}
+
+.error-message {
+  color: #d9534f;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}

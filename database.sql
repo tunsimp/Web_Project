@@ -35,7 +35,15 @@ CREATE TABLE Labs (
   FOREIGN KEY (user_id) REFERENCES Users(user_id),
   FOREIGN KEY (labinfo_id) REFERENCES LabInfo(labinfo_id)
 );
-
+CREATE TABLE UserLabCompletions (
+    completion_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    labinfo_id INT NOT NULL,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (labinfo_id) REFERENCES LabInfo(labinfo_id),
+    UNIQUE KEY unique_user_lab (user_id, labinfo_id)
+);
 -- 4. Lessons Table
 CREATE TABLE Lessons (
   lesson_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,4 +103,4 @@ VALUES
     TRUE -- is_active
   );
 -- Sample users
-
+select * from UserLabCompletions;

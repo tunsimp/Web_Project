@@ -4,14 +4,26 @@ import Navbar from "../NavBar/NavBar"
 import "./Lab.css"
 import LabCards from "./LabCards"
 
+interface LabData {
+  lab_id: string;
+  lab_name: string;
+  lab_description: string;
+  difficulty: string;
+  category: string;
+  is_active: boolean;
+  completed?: boolean;
+  lab_link?: string;
+}
+
 const Lab = () => {
-    const [labs, setLabs] = useState<any[]>([]);
+    const [labs, setLabs] = useState<LabData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchLabs = async () => {
             try {
+                // Use the labs-with-status endpoint instead of labs
                 const response = await axios.get("http://localhost:5000/api/route/labs", { withCredentials: true });
                 
                 // Convert the object of labs to an array
@@ -48,6 +60,7 @@ const Lab = () => {
                             difficulty={lab.difficulty}
                             category={lab.category}
                             lab_link={lab.lab_link || ""}
+                            completed={lab.completed || false} // Pass the completion status
                         />
                     ))}
                 </div>

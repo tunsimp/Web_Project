@@ -5,32 +5,60 @@
 .labs-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start; /* Change from space-between to flex-start */
+  justify-content: flex-start;
   gap: 2rem;
   margin-top: 3rem;
 }
 
 .lab-card {
-  background-color: var(--card-background);
+  background-color: var(
+    --card-background
+  ); /* Keep same background for all cards */
   border-radius: 40px;
   padding: 2rem;
-  flex: 0 0 calc(33.333% - 1.4rem); /* Adjust calculation to account for gaps */
+  flex: 0 0 calc(33.333% - 1.4rem);
   max-width: calc(33.333% - 1.4rem);
   box-sizing: border-box;
   margin-bottom: 2rem;
-  transition: transform 0.3s;
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative; /* For positioning the completion badge */
+}
+
+/* Lab completion status styles - keep the same background */
+.lab-card.lab-completed {
+  border-left: 4px solid #4caf50; /* Green border on left */
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3); /* Subtle glow */
+}
+
+.lab-card.lab-pending {
+  border-left: 4px solid #9500d1; /* Blue border */
+}
+
+.completion-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: #4caf50;
+  color: white;
+  padding: 0.3rem 0.7rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
 }
 
 .lab-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
+
 .lab-card,
 .modal-content {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centers content horizontally */
+  align-items: center;
   text-align: center;
 }
+
 .lab-difficulty,
 .lab-category {
   font-size: 0.9rem;
@@ -39,8 +67,9 @@
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   width: fit-content;
-  margin: 0.3rem 0; /* Adjusted margin to separate vertically */
+  margin: 0.3rem 0;
 }
+
 .lab-title {
   font-size: 1.4rem;
   font-weight: 600;
@@ -81,6 +110,15 @@
   text-align: center;
 }
 
+/* Modal completion status styles - keep the same background */
+.modal-content.lab-completed {
+  border-top: 4px solid #4caf50;
+}
+
+.modal-content.lab-pending {
+  border-top: 4px solid #9500d1;
+}
+
 .modal-buttons {
   display: flex;
   justify-content: center;
@@ -88,7 +126,7 @@
 }
 
 .start-button {
-  margin-right: 0.5rem; /* Adds space to the right of the Start button */
+  margin-right: 0.5rem;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 8px;
@@ -113,12 +151,11 @@
 .modal-submit {
   display: flex;
   flex-direction: row;
-  align-items: stretch; /* Change from center to stretch */
+  align-items: stretch;
   gap: 0.5rem;
   margin-top: 1rem;
 }
 
-/* Make sure the button has no unexpected padding that might push content down */
 .flag-submit-button {
   width: 100px;
   background-color: rgb(255, 255, 255);
