@@ -1,0 +1,162 @@
+.lessons-section {
+  padding: 6rem 8%;
+}
+
+.lessons-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.lesson-card {
+  background-color: var(
+    --card-background
+  ); /* Keep same background for all cards */
+  border-radius: 40px;
+  padding: 2rem;
+  flex: 0 0 calc(33.333% - 1.4rem);
+  max-width: calc(33.333% - 1.4rem);
+  box-sizing: border-box;
+  margin-bottom: 2rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative; /* For positioning the completion badge */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Lesson completion status styles - keep the same background */
+.lesson-card.completed {
+  border-left: 4px solid #4caf50; /* Green border on left */
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3); /* Subtle glow */
+}
+
+.lesson-card:not(.completed) {
+  border-left: 4px solid #9500d1; /* Purple border for in progress/not started */
+}
+
+.completion-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: #4caf50;
+  color: white;
+  padding: 0.3rem 0.7rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.lesson-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.lesson-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.lesson-description {
+  color: #b0b0b0;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+.lessons-heading {
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  color: #ffffff;
+  text-align: center;
+}
+
+.lessons-group {
+  margin-bottom: 3rem;
+  width: 100%;
+}
+
+.lessons-group h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #ffffff;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.start-lesson-btn {
+  background-color: #9500d1; /* Purple for start button */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  margin-top: auto;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.start-lesson-btn:hover {
+  background-color: #7b00ab; /* Darker purple on hover */
+}
+
+/* Completed lesson button styling */
+.completed .start-lesson-btn {
+  background-color: #4caf50;
+}
+
+.completed .start-lesson-btn:hover {
+  background-color: #388e3c;
+}
+
+/* Loading and error states */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #d32f2f;
+  padding: 1rem;
+  border-radius: 4px;
+  text-align: center;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.no-lessons {
+  text-align: center;
+  padding: 3rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .lesson-card {
+    flex: 0 0 calc(50% - 1rem);
+    max-width: calc(50% - 1rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .lesson-card {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .lessons-section {
+    padding: 4rem 5%;
+  }
+}

@@ -1,0 +1,6 @@
+@echo off
+echo Starting Backend...
+start cmd /k "cd C:\HCMIU\Web_Project\backend && nodemon app.js"
+
+echo Starting Frontend...
+start cmd /k "cd C:\HCMIU\Web_Project\frontend\react-app && npm run dev"

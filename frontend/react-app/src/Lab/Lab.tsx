@@ -49,7 +49,8 @@ const Lab = () => {
     return (
         <>
             <Navbar/>
-            <div className="labs-section">        
+            <div className="labs-section">      
+            <h1 className="labs-heading">Labs</h1>
                 <div className="labs-container" >
                     {labs.map((lab) => (
                         <LabCards 

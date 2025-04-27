@@ -9,24 +9,27 @@ const {
   deleteContainer,
 } = require("../controllers/dockerController");
 
-// Example: protected home route
-router.get("/home", checkAuth, (req, res) => {
+// Apply checkAuth middleware to all routes in this router
+router.use(checkAuth);
+
+// Now you can remove checkAuth from individual routes
+router.get("/home", (req, res) => {
   res.json({ message: "valid", user_name: req.user_name });
 });
 
-router.get("/labs", checkAuth, labController.labsWithStatus); // Call the labs controller
-router.get("/verify-flag", checkAuth, labController.verifyFlag);
+router.get("/labs", labController.labsWithStatus);
+router.get("/verify-flag", labController.verifyFlag);
 
 router.post(
   "/create-container",
-  checkAuth,
   labController.getLabName,
   createContainerController
 );
 
-router.post("/getlabname", checkAuth, labController.getLabName);
+router.post("/getlabname", labController.getLabName);
 
-router.post("/delete-container", checkAuth, deleteContainer);
-router.get("/account", checkAuth, userController.getUser); // Call the getAccount controller
-router.post("/update-account", checkAuth, userController.updateUser); // Call the updateAccount controller
+router.post("/delete-container", deleteContainer);
+router.get("/account", userController.getUser);
+router.post("/update-account", userController.updateUser);
+
 module.exports = router;

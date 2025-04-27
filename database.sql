@@ -56,7 +56,7 @@ CREATE TABLE LessonPages (
   lessonpage_id INT AUTO_INCREMENT PRIMARY KEY,
   lesson_id INT NOT NULL,
   page_number INT NOT NULL,
-  content TEXT NOT NULL,
+  content_path TEXT NOT NULL,
   FOREIGN KEY (lesson_id) REFERENCES Lessons(lesson_id)
 );
 
@@ -103,4 +103,42 @@ VALUES
     TRUE -- is_active
   );
 -- Sample users
-select * from UserLabCompletions;
+INSERT INTO Lessons (title, description) 
+VALUES (
+  'Cross-Site Scripting (XSS) Fundamentals', 
+  'Learn how to identify, exploit, and prevent Cross-Site Scripting vulnerabilities. This lesson covers the three main types of XSS attacks: Reflected, Stored, and DOM-based XSS. You will understand how attackers can inject malicious scripts into web pages and how to implement proper input validation, output encoding, and Content Security Policy (CSP) to protect your applications.'
+);
+
+-- Insert lesson on SQL Injection (SQLi)
+INSERT INTO Lessons (title, description) 
+VALUES (
+  'SQL Injection Attack and Defense', 
+  'This comprehensive lesson explores SQL Injection vulnerabilities that occur when user-supplied data is incorrectly filtered before being included in SQL queries. Learn attack techniques including error-based, union-based, blind, and time-based SQL injection. The lesson also covers defensive strategies such as prepared statements, parameterized queries, ORM frameworks, and the principle of least privilege.'
+);
+
+-- Insert lesson on Server-Side Template Injection (SSTI)
+INSERT INTO Lessons (title, description) 
+VALUES (
+  'Server-Side Template Injection Exploitation', 
+  'Discover how Server-Side Template Injection vulnerabilities arise when user input is directly embedded into template engines like Jinja2, Twig, or FreeMarker. This lesson demonstrates how attackers can execute arbitrary code by injecting malicious template directives. You will learn detection techniques, exploit development, and prevention methods including proper template usage, input sanitization, and sandboxed template environments.'
+);
+INSERT INTO LessonPages (lesson_id, page_number, content_path) VALUES
+-- Lesson 1: Cross-Site Scripting (XSS) Fundamentals (5 pages)
+(1, 1, 'content/xss/introduction.html'),
+(1, 2, 'content/xss/reflected.html'),
+(1, 3, 'content/xss/stored.html'),
+(1, 4, 'content/xss/dom-based.html'),
+(1, 5, 'content/xss/prevention.html'),
+-- Lesson 2: SQL Injection Attack and Defense (5 pages)
+(2, 1, 'content/sqli/introduction.html'),
+(2, 2, 'content/sqli/union-based.html'),
+(2, 3, 'content/sqli/error-based.html'),
+(2, 4, 'content/sqli/blind.html'),
+(2, 5, 'content/sqli/prevention.html'),
+-- Lesson 3: Server-Side Template Injection Exploitation (4 pages)
+(3, 1, 'content/ssti/introduction.html'),
+(3, 2, 'content/ssti/identification.html'),
+(3, 3, 'content/ssti/exploitation.html'),
+(3, 4, 'content/ssti/prevention.html');
+
+select * from LessonPages;

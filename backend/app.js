@@ -1,12 +1,12 @@
 const express = require("express");
-const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const indexRoutes = require("./routes/indexRoutes");
-const checkAuth = require("./middleware/checkAuth");
+const lessonRoutes = require("./routes/lessonRoutes"); // Add this line
 
 const app = express();
+
 // Enable CORS
 app.use(
   cors({
@@ -24,6 +24,7 @@ app.use(cookieParser());
 // Use routes
 app.use("/api/auth", authRoutes);
 app.use("/api/route", indexRoutes);
+app.use("/api/lessons", lessonRoutes); // Add this line
 
 // Handle 404 if route is not defined
 app.use((req, res) => {

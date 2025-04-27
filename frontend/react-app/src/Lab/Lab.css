@@ -1,7 +1,10 @@
 .labs-section {
   padding: 6rem 8%;
 }
-
+.labs-section h1 {
+  /* Centered title */
+  text-align: center;
+}
 .labs-container {
   display: flex;
   flex-wrap: wrap;
@@ -158,11 +161,12 @@
 
 .flag-submit-button {
   width: 100px;
-  background-color: rgb(255, 255, 255);
+  background-color: #9500d1;
+  border-color: #9500d1;
   border-radius: 10px;
   font-size: 15px;
   font-weight: bold;
-  color: #24243c;
+  color: #ffffff;
 }
 
 .text-input {

@@ -9,7 +9,7 @@ import Admin from './Admin/Admin';
 import Lab from './Lab/Lab';
 import Paths from './Paths/Paths';
 import Account from './Account/Account';
-
+import LessonView from './Lesson/LessonView';
 function App() {
   return (
     <BrowserRouter>
@@ -21,6 +21,7 @@ function App() {
           <Route path="/labs" element={<Lab />} />
           <Route path="/paths" element={<Paths />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/lesson/:lessonId/:pageNumber" element={<LessonView />} />
         </Route>
         <Route element={<ProtectedRoute requiredRole="admin" />}>
           <Route path="/admin" element={<Admin />} />
