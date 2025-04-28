@@ -141,4 +141,4 @@ INSERT INTO LessonPages (lesson_id, page_number, content_path) VALUES
 (3, 3, 'content/ssti/exploitation.html'),
 (3, 4, 'content/ssti/prevention.html');
 
-select * from LessonPages;
+select * from UserLessonProgress;

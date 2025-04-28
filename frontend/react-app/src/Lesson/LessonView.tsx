@@ -135,8 +135,7 @@ const LessonView = () => {
           </div>
         </div>
 
-        <div className="lesson-view-content">
-          <div dangerouslySetInnerHTML={{ __html: pageContent }} />
+        <div className="lesson-view-content" dangerouslySetInnerHTML={{ __html: pageContent }}>
         </div>
 
         <div className="lesson-view-navigation">

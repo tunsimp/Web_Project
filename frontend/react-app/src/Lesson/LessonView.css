@@ -154,7 +154,63 @@
   margin: 2rem auto;
   max-width: 600px;
 }
+.lesson-view-content .definition-box {
+  background-color: #f8f9fa;
+  border-left: 4px solid #9500d1;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+  color: black;
+}
 
+.lesson-view-content .example-box {
+  background-color: #f0f8ff;
+  border-left: 4px solid #9500d1;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+  color: black;
+}
+
+.lesson-view-content .danger-box {
+  background-color: #fff0f0;
+  border-left: 4px solid #d9534f;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+  color: black;
+}
+
+/* Make all headings white by default */
+.lesson-view-content h1 {
+  color: #ffffff;
+  margin-bottom: 20px;
+}
+
+.lesson-view-content h2 {
+  color: #ffffff;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.lesson-view-content h3 {
+  color: #ffffff;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+/* Override heading colors to black inside boxes */
+.lesson-view-content .definition-box h1,
+.lesson-view-content .definition-box h2,
+.lesson-view-content .definition-box h3,
+.lesson-view-content .example-box h1,
+.lesson-view-content .example-box h2,
+.lesson-view-content .example-box h3,
+.lesson-view-content .danger-box h1,
+.lesson-view-content .danger-box h2,
+.lesson-view-content .danger-box h3 {
+  color: black;
+}
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .lesson-view-container {

