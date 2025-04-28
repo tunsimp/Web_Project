@@ -224,7 +224,8 @@ exports.getUserProgress = async (req, res) => {
 
 exports.updateUserProgress = async (req, res) => {
   try {
-    const { userId, lessonId } = req.params;
+    const userId = req.user_id;
+    const { lessonId } = req.params;
     const { currentPage, status } = req.body;
 
     if (!currentPage || !status) {
@@ -253,15 +254,10 @@ exports.updateUserProgress = async (req, res) => {
 
 exports.getUserLessonsWithProgress = async (req, res) => {
   try {
-    // Get user ID from authenticated request
-    const userId = req.user_id; // Make sure your checkAuth middleware adds user info to req
+    const userId = req.user_id;
 
-    // First get all lessons
     const lessons = await Lesson.getAll();
-
-    // Then get the user's progress for all lessons
     const progress = await UserLessonProgress.getAllForUser(userId);
-
     // Create a map of progress by lesson ID for easy lookup
     const progressByLessonId = {};
     progress.forEach((item) => {
@@ -290,7 +286,7 @@ exports.getUserLessonsWithProgress = async (req, res) => {
 
       lessonsWithProgress.push(lesson);
     }
-
+    console.log("Lessons with progress:", lessonsWithProgress);
     res.status(200).json(lessonsWithProgress);
   } catch (error) {
     console.error("Error fetching lessons with progress:", error);

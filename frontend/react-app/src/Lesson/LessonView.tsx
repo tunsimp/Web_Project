@@ -106,7 +106,7 @@ const LessonView = () => {
         { currentPage: pageNum, status: 'complete' },
         { withCredentials: true }
       );
-      navigate('/lessons');
+      navigate('/paths');
     } catch (err) {
       console.error('Failed to mark lesson as complete:', err);
     }

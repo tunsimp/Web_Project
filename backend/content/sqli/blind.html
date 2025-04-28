@@ -1,0 +1,346 @@
+<div class="lesson-view-content">
+  <h1>Blind SQL Injection</h1>
+
+  <div class="definition-box">
+    <h2>What is Blind SQL Injection?</h2>
+    <p>
+      Blind SQL injection is a type of SQL injection where the attacker cannot
+      see the direct output of their injected queries, such as error messages or
+      query results. Instead, the attacker infers information about the database
+      by observing the application's behavior, such as response differences,
+      timing variations, or conditional responses. This makes blind SQL
+      injection more challenging but still highly effective for extracting
+      sensitive data.
+    </p>
+  </div>
+
+  <h2>How Blind SQL Injection Works</h2>
+  <p>Blind SQL injection relies on three key factors:</p>
+  <ol>
+    <li>The application contains SQL injection vulnerabilities</li>
+    <li>
+      The application does not display database error messages or direct query
+      results
+    </li>
+    <li>
+      The attacker can manipulate input to infer data through indirect
+      indicators
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Basic Blind SQL Injection Attack:</h3>
+    <p>Consider a URL vulnerable to SQL injection:</p>
+    <p><code>https://example.com/products?id=10</code></p>
+    <p>An attacker might try:</p>
+    <p><code>https://example.com/products?id=10 AND 1=1</code></p>
+    <p>
+      If the page loads normally, it confirms the query executed successfully.
+      Then, they try:
+    </p>
+    <p><code>https://example.com/products?id=10 AND 1=2</code></p>
+    <p>
+      If the page behaves differently (e.g., no results or an empty page), it
+      indicates a SQL injection vulnerability.
+    </p>
+  </div>
+
+  <h2>Types of Blind SQL Injection</h2>
+  <p>Blind SQL injection is typically categorized into two main types:</p>
+
+  <h3>Boolean-Based Blind SQL Injection</h3>
+  <p>
+    Exploits differences in application responses based on true or false
+    conditions.
+  </p>
+  <ul>
+    <li>
+      <strong>Conditional queries</strong> - Injecting conditions that alter the
+      response
+    </li>
+    <li>
+      <strong>Response analysis</strong> - Observing changes in content, status
+      codes, or page rendering
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Boolean-Based Example:</h3>
+    <p><code>id=10 AND (SELECT LENGTH(database()))=6</code></p>
+    <p>
+      If the page loads normally, the database name is 6 characters long. The
+      attacker iterates to confirm each character:
+    </p>
+    <p><code>id=10 AND ASCII(SUBSTRING((SELECT database()),1,1))=109</code></p>
+    <p>
+      If the response is "true" (normal page), the first character is 'm' (ASCII
+      109).
+    </p>
+  </div>
+
+  <h3>Time-Based Blind SQL Injection</h3>
+  <p>Relies on introducing delays in query execution to infer information.</p>
+  <ul>
+    <li>
+      <strong>Delay functions</strong> - Using database-specific sleep or wait
+      functions
+    </li>
+    <li>
+      <strong>Timing analysis</strong> - Measuring response time differences
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Time-Based Example (MySQL):</h3>
+    <p><code>id=10 AND IF((SELECT LENGTH(database()))=6, SLEEP(5), 0)</code></p>
+    <p>
+      If the response is delayed by 5 seconds, the database name is 6 characters
+      long. To extract data:
+    </p>
+    <p>
+      <code
+        >id=10 AND IF(ASCII(SUBSTRING((SELECT database()),1,1))=109, SLEEP(5),
+        0)</code
+      >
+    </p>
+    <p>A 5-second delay confirms the first character is 'm'.</p>
+  </div>
+
+  <h2>Database-Specific Techniques</h2>
+  <p>Different databases offer unique functions for blind SQL injection:</p>
+
+  <h3>MySQL/MariaDB Techniques</h3>
+  <ul>
+    <li><strong>SLEEP()</strong> - Introduces delays for time-based attacks</li>
+    <li>
+      <strong>BENCHMARK()</strong> - Executes a function repeatedly to cause
+      delays
+    </li>
+    <li>
+      <strong>SUBSTRING() and ASCII()</strong> - Extracts data character by
+      character
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>MySQL BENCHMARK() Example:</h3>
+    <p><code>id=10 AND BENCHMARK(1000000,MD5(1))</code></p>
+    <p>This causes a noticeable delay, confirming the query was executed.</p>
+  </div>
+
+  <h3>SQL Server Techniques</h3>
+  <ul>
+    <li>
+      <strong>WAITFOR DELAY</strong> - Introduces delays for time-based attacks
+    </li>
+    <li>
+      <strong>CASE statements</strong> - Manipulates query logic for
+      boolean-based attacks
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>SQL Server WAITFOR Example:</h3>
+    <p>
+      <code>id=10; IF (SELECT LEN(DB_NAME()))=6 WAITFOR DELAY '00:00:05'</code>
+    </p>
+    <p>A 5-second delay confirms the database name is 6 characters long.</p>
+  </div>
+
+  <h3>Oracle Techniques</h3>
+  <ul>
+    <li><strong>DBMS_LOCK.SLEEP</strong> - Introduces delays</li>
+    <li><strong>Conditional queries</strong> - Uses CASE or IF-THEN logic</li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Oracle DBMS_LOCK.SLEEP Example:</h3>
+    <p>
+      <code
+        >id=10 AND (CASE WHEN (SELECT LENGTH(banner) FROM v$version WHERE
+        rownum=1)=30 THEN DBMS_LOCK.SLEEP(5) ELSE 1 END)=1</code
+      >
+    </p>
+    <p>A 5-second delay confirms the version banner is 30 characters long.</p>
+  </div>
+
+  <h3>PostgreSQL Techniques</h3>
+  <ul>
+    <li>
+      <strong>pg_sleep()</strong> - Introduces delays for time-based attacks
+    </li>
+    <li><strong>CASE statements</strong> - Manipulates query logic</li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Subtle Indicators</h3>
+    <p>
+      In blind SQL injection, attackers rely on subtle differences in
+      application behavior, such as page content, HTTP status codes, or response
+      times. Even if error messages are hidden, these indicators can still leak
+      sensitive information.
+    </p>
+  </div>
+
+  <h2>Extracting Data Step by Step</h2>
+  <p>
+    A systematic approach to blind SQL injection typically follows these steps:
+  </p>
+  <ol>
+    <li>
+      <strong>Confirm vulnerability</strong> - Test for SQL injection with
+      true/false conditions
+    </li>
+    <li>
+      <strong>Identify DBMS</strong> - Use database-specific functions to infer
+      the database type
+    </li>
+    <li>
+      <strong>Determine data length</strong> - Use boolean or time-based queries
+      to find data lengths
+    </li>
+    <li>
+      <strong>Extract data character by character</strong> - Use ASCII or
+      substring functions
+    </li>
+    <li>
+      <strong>Enumerate schema</strong> - Discover database, table, and column
+      names
+    </li>
+    <li>
+      <strong>Retrieve sensitive data</strong> - Extract valuable information
+      like credentials
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>MySQL Boolean-Based Extraction Sequence:</h3>
+    <p>1. Confirm database name length:</p>
+    <p><code>id=10 AND (SELECT LENGTH(database()))=6</code></p>
+    <p>Normal response confirms the database name is 6 characters.</p>
+
+    <p>2. Extract database name:</p>
+    <p><code>id=10 AND ASCII(SUBSTRING((SELECT database()),1,1))=109</code></p>
+    <p>
+      Normal response confirms the first character is 'm'. Repeat for each
+      character.
+    </p>
+
+    <p>3. Extract table names:</p>
+    <p>
+      <code
+        >id=10 AND (SELECT LENGTH(table_name) FROM information_schema.tables
+        WHERE table_schema=database() LIMIT 0,1)=5</code
+      >
+    </p>
+    <p>Normal response confirms the first table name is 5 characters long.</p>
+  </div>
+
+  <h2>Automating Blind SQL Injection</h2>
+  <p>Attackers use automation to streamline data extraction:</p>
+  <ul>
+    <li>
+      <strong>Binary search</strong> - Reduces the number of queries by halving
+      the ASCII range
+    </li>
+    <li>
+      <strong>Custom scripts</strong> - Automates character-by-character
+      extraction
+    </li>
+    <li>
+      <strong>Tools like SQLMap</strong> - Handles boolean and time-based
+      attacks efficiently
+    </li>
+  </ul>
+
+  <p>Example binary search query:</p>
+  <p><code>id=10 AND ASCII(SUBSTRING((SELECT database()),1,1))>64</code></p>
+  <p>
+    If true, the character’s ASCII value is greater than 64. Continue narrowing
+    the range.
+  </p>
+
+  <div class="danger-box">
+    <h3>Performance Impact</h3>
+    <p>
+      Blind SQL injection, especially time-based attacks, can generate thousands
+      of queries, causing significant server load. This can lead to performance
+      degradation or even denial-of-service conditions.
+    </p>
+  </div>
+
+  <h2>Real-World Example</h2>
+  <p>A real vulnerability discovered in a web application:</p>
+  <ol>
+    <li>
+      The app had a login page:
+      <code>login.php?username=test&password=test</code>
+    </li>
+    <li>
+      Testing revealed SQL injection:
+      <code>username=test' AND 1=1--</code> logged in successfully
+    </li>
+    <li>
+      An attacker used:
+      <code>username=test' AND (SELECT LENGTH(database()))=6--</code>
+    </li>
+    <p>The page loaded normally, confirming the database name length.</p>
+    <li>
+      Further queries extracted the database name 'myappdb' and table 'users'
+    </li>
+    <li>The attacker retrieved admin credentials character by character</li>
+    <li>The attacker gained unauthorized access to the application</li>
+  </ol>
+
+  <h2>Prevention Techniques</h2>
+  <p>To prevent blind SQL injection:</p>
+  <ol>
+    <li>
+      <strong>Use Parameterized Queries</strong> - Prevent direct user input in
+      SQL queries
+    </li>
+    <li>
+      <strong>Sanitize Inputs</strong> - Validate and filter all user inputs
+    </li>
+    <li>
+      <strong>Limit Database Permissions</strong> - Use least privilege for
+      database accounts
+    </li>
+    <li>
+      <strong>Monitor Query Performance</strong> - Detect unusual delays or
+      query volumes
+    </li>
+    <li><strong>Use ORMs</strong> - Leverage safe query-building libraries</li>
+    <li>
+      <strong>Deploy WAF</strong> - Block suspicious SQL patterns with a web
+      application firewall
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Secure Query Example:</h3>
+    <p>Instead of:</p>
+    <p>
+      <code>
+        $query = "SELECT * FROM users WHERE username = '$username'";
+      </code>
+    </p>
+    <p>Do this:</p>
+    <p>
+      <code>
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+      </code>
+    </p>
+  </div>
+
+  <div class="danger-box">
+    <h3>Defense in Depth</h3>
+    <p>
+      Combine multiple prevention techniques, such as parameterized queries,
+      input validation, and WAF protection, to create a robust defense against
+      blind SQL injection. Monitoring for unusual application behavior can also
+      help detect attacks early.
+    </p>
+  </div>
+</div>

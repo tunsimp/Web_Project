@@ -1,0 +1,254 @@
+<div class="lesson-view-content">
+  <h1>Introduction to SQL Injection</h1>
+
+  <div class="definition-box">
+    <h2>What is SQL Injection?</h2>
+    <p>
+      SQL Injection (SQLi) is a code injection technique that exploits
+      vulnerabilities in web applications that use SQL databases. Attackers
+      insert malicious SQL statements into entry fields, which are then executed
+      by the application's database. This attack vector allows attackers to
+      access, modify, or delete data, bypass authentication, and in some cases,
+      gain complete control over the database server.
+    </p>
+  </div>
+
+  <h2>How SQL Injection Works</h2>
+  <p>SQL Injection attacks occur when applications:</p>
+  <ul>
+    <li>
+      Build SQL queries by concatenating strings that include user-supplied
+      input
+      <strong>without proper validation or parameterization</strong>
+    </li>
+    <li>Trust user input and incorporate it directly into SQL queries</li>
+    <li>Fail to implement proper escaping or sanitization of user data</li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Simple Example:</h3>
+    <p>Consider a login query built using string concatenation:</p>
+    <p>
+      <code
+        >sql = "SELECT * FROM users WHERE username = '" + username + "' AND
+        password = '" + password + "';"</code
+      >
+    </p>
+    <p>
+      If a user enters the following as their username: <code>admin' --</code>
+    </p>
+    <p>The resulting query becomes:</p>
+    <p>
+      <code
+        >SELECT * FROM users WHERE username = 'admin' --' AND password =
+        'anything';</code
+      >
+    </p>
+    <p>
+      The <code>--</code> is a comment in SQL, causing the password check to be
+      ignored, allowing access with any password.
+    </p>
+  </div>
+
+  <h2>Impact of SQL Injection</h2>
+  <p>If successful, an SQL Injection attack can allow the attacker to:</p>
+  <ul>
+    <li>Access sensitive data from the database</li>
+    <li>Modify database data (insert, update, delete)</li>
+    <li>Execute administration operations on the database</li>
+    <li>Recover the content of a given file on the database server</li>
+    <li>In some cases, issue commands to the operating system</li>
+    <li>Bypass authentication and authorization mechanisms</li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Critical Security Risk</h3>
+    <p>
+      SQL injection has been consistently ranked as one of the top web
+      application vulnerabilities in the OWASP Top 10. A successful SQL
+      injection attack can have devastating consequences for an organization,
+      including data breaches, regulatory fines, and severe damage to
+      reputation.
+    </p>
+  </div>
+
+  <h2>Types of SQL Injection</h2>
+  <p>SQL Injection attacks are typically classified into three categories:</p>
+  <ol>
+    <li>
+      <strong>In-band SQLi</strong> - The attacker uses the same communication
+      channel to launch the attack and gather results
+      <ul>
+        <li>
+          <strong>Error-based</strong> - Forces the database to generate error
+          messages that may reveal information
+        </li>
+        <li>
+          <strong>Union-based</strong> - Uses UNION SQL operator to combine
+          results of multiple SELECT statements
+        </li>
+      </ul>
+    </li>
+    <li>
+      <strong>Blind SQLi</strong> - No data is transferred from the database
+      server to the attacker
+      <ul>
+        <li>
+          <strong>Boolean-based</strong> - Sends queries that make the
+          application return different results based on whether the query is
+          true or false
+        </li>
+        <li>
+          <strong>Time-based</strong> - Forces the database to wait for a
+          specified time before responding
+        </li>
+      </ul>
+    </li>
+    <li>
+      <strong>Out-of-band SQLi</strong> - Uses alternative channels to extract
+      data (e.g., making DNS or HTTP requests from the database server)
+    </li>
+  </ol>
+
+  <h2>Common SQL Injection Techniques</h2>
+  <p>
+    Attackers use various techniques to exploit SQL injection vulnerabilities:
+  </p>
+  <ul>
+    <li>
+      <strong>Bypassing authentication</strong> - Using SQLi to log in without
+      valid credentials
+    </li>
+    <li>
+      <strong>Union attacks</strong> - Combining result sets from different
+      queries
+    </li>
+    <li>
+      <strong>Extracting data</strong> - Retrieving sensitive information from
+      the database
+    </li>
+    <li>
+      <strong>Examining the database</strong> - Determining database structure
+      and schema
+    </li>
+    <li>
+      <strong>Blind SQL injection</strong> - Inferring data when direct output
+      is not available
+    </li>
+    <li>
+      <strong>Database fingerprinting</strong> - Identifying the underlying
+      database system
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>UNION Attack Example:</h3>
+    <p>
+      For a product search form that directly includes user input in a query:
+    </p>
+    <p>
+      <code
+        >SELECT name, description FROM products WHERE category =
+        'Electronics'</code
+      >
+    </p>
+    <p>An attacker might input:</p>
+    <p>
+      <code>Electronics' UNION SELECT username, password FROM users--</code>
+    </p>
+    <p>Resulting in:</p>
+    <p>
+      <code
+        >SELECT name, description FROM products WHERE category = 'Electronics'
+        UNION SELECT username, password FROM users--'</code
+      >
+    </p>
+    <p>
+      This returns both product information and user credentials in a single
+      response.
+    </p>
+  </div>
+
+  <h2>Real-World Consequences</h2>
+  <p>SQL injection attacks have led to numerous high-profile data breaches:</p>
+  <ul>
+    <li>
+      In 2008, Heartland Payment Systems suffered an SQL injection attack that
+      exposed over 130 million credit card numbers
+    </li>
+    <li>
+      In 2011, Sony PlayStation Network was breached via SQL injection,
+      affecting 77 million users
+    </li>
+    <li>
+      In 2015, an SQL injection vulnerability in vBulletin software led to
+      breaches of several major forums
+    </li>
+    <li>
+      In 2017, Equifax suffered a major breach that exposed personal information
+      of 147 million people
+    </li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Business Impact</h3>
+    <p>
+      Beyond the technical damage, SQL injection breaches often result in
+      substantial financial losses through regulatory fines, lawsuits,
+      remediation costs, and lost business due to reputation damage. The average
+      cost of a data breach in 2023 exceeded $4.5 million per incident.
+    </p>
+  </div>
+
+  <h2>Prevention Preview</h2>
+  <p>
+    We'll cover SQL injection prevention in detail later, but key strategies
+    include:
+  </p>
+  <ol>
+    <li>
+      <strong>Prepared Statements (Parameterized Queries)</strong> - Separate
+      SQL code from data
+    </li>
+    <li>
+      <strong>Stored Procedures</strong> - Encapsulate SQL logic in the database
+    </li>
+    <li>
+      <strong>Input Validation</strong> - Verify that user input meets expected
+      formats
+    </li>
+    <li>
+      <strong>Escaping User Input</strong> - Escape special characters in user
+      input
+    </li>
+    <li>
+      <strong>Least Privilege</strong> - Limit database account permissions
+    </li>
+    <li>
+      <strong>Web Application Firewalls</strong> - Filter malicious SQL patterns
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Secure Code Example:</h3>
+    <p>Instead of concatenating strings:</p>
+    <p>
+      <code>
+        // Vulnerable code<br />
+        String query = "SELECT * FROM users WHERE username = '" + username + "'
+        AND password = '" + password + "'";
+      </code>
+    </p>
+    <p>Use parameterized queries:</p>
+    <p>
+      <code>
+        // Secure code<br />
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM
+        users WHERE username = ? AND password = ?");<br />
+        stmt.setString(1, username);<br />
+        stmt.setString(2, password);<br />
+        ResultSet results = stmt.executeQuery();
+      </code>
+    </p>
+  </div>
+</div>

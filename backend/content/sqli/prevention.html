@@ -1,0 +1,362 @@
+<div class="lesson-view-content">
+  <h1>Preventing SQL Injection</h1>
+
+  <div class="definition-box">
+    <h2>What is SQL Injection Prevention?</h2>
+    <p>
+      SQL injection prevention involves implementing security measures to
+      protect web applications from SQL injection attacks, where attackers
+      manipulate SQL queries by injecting malicious code through user inputs.
+      Effective prevention ensures that user inputs cannot alter the intended
+      query logic, safeguarding sensitive data and maintaining application
+      integrity.
+    </p>
+  </div>
+
+  <h2>Why SQL Injection Prevention is Critical</h2>
+  <p>Preventing SQL injection is essential due to the following risks:</p>
+  <ol>
+    <li>
+      Unauthorized access to sensitive data, such as user credentials or
+      financial information
+    </li>
+    <li>Modification or deletion of database records</li>
+    <li>Bypassing authentication mechanisms</li>
+    <li>Potential for complete database or server compromise</li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Vulnerable Code Example:</h3>
+    <p>Consider a login query prone to SQL injection:</p>
+    <p>
+      <code
+        >$query = "SELECT * FROM users WHERE username = '$username' AND password
+        = '$password'";</code
+      >
+    </p>
+    <p>An attacker could input:</p>
+    <p><code>username = admin' --</code></p>
+    <p>This modifies the query to:</p>
+    <p>
+      <code
+        >SELECT * FROM users WHERE username = 'admin' --' AND password =
+        ''</code
+      >
+    </p>
+    <p>
+      The comment (-- ) ignores the password check, allowing unauthorized
+      access.
+    </p>
+  </div>
+
+  <h2>Key Prevention Techniques</h2>
+  <p>
+    Adopt the following techniques to prevent SQL injection vulnerabilities:
+  </p>
+
+  <h3>1. Use Parameterized Queries (Prepared Statements)</h3>
+  <p>
+    Parameterized queries separate SQL code from user input, ensuring inputs are
+    treated as data, not executable code.
+  </p>
+  <ul>
+    <li>
+      <strong>Prevents query manipulation</strong> - User inputs cannot alter
+      query structure
+    </li>
+    <li>
+      <strong>Supported by most databases</strong> - MySQL, PostgreSQL, SQL
+      Server, Oracle, etc.
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Parameterized Query Example (PHP/PDO):</h3>
+    <p>
+      <code>
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND
+        password = ?"); $stmt->execute([$username, $password]);
+      </code>
+    </p>
+    <p>
+      Even if an attacker inputs <code>admin' --</code>, it is treated as a
+      literal string, not part of the query logic.
+    </p>
+  </div>
+
+  <h3>2. Use Object-Relational Mappers (ORMs)</h3>
+  <p>
+    ORMs like Django ORM, Hibernate, or Sequelize abstract SQL queries,
+    automatically handling input sanitization.
+  </p>
+  <ul>
+    <li>
+      <strong>Reduces manual query errors</strong> - Developers avoid writing
+      raw SQL
+    </li>
+    <li>
+      <strong>Built-in protections</strong> - ORMs use parameterized queries
+      internally
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Django ORM Example:</h3>
+    <p>
+      <code>
+        user = User.objects.filter(username=username, password=password).first()
+      </code>
+    </p>
+    <p>The ORM generates a safe, parameterized query, preventing injection.</p>
+  </div>
+
+  <h3>3. Implement Input Validation and Sanitization</h3>
+  <p>
+    Validate and sanitize all user inputs to ensure they conform to expected
+    formats.
+  </p>
+  <ul>
+    <li>
+      <strong>Whitelisting</strong> - Allow only specific characters or formats
+      (e.g., alphanumeric for usernames)
+    </li>
+    <li>
+      <strong>Reject malicious patterns</strong> - Block inputs containing SQL
+      keywords or special characters
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Input Validation Example (Python):</h3>
+    <p>
+      <code>
+        import re if not re.match("^[a-zA-Z0-9]+$", username): raise
+        ValueError("Invalid username format")
+      </code>
+    </p>
+    <p>
+      This ensures the username contains only alphanumeric characters, reducing
+      injection risks.
+    </p>
+  </div>
+
+  <h3>4. Escape User Inputs (Fallback Option)</h3>
+  <p>
+    If parameterized queries are not feasible, escape special characters in user
+    inputs to prevent them from being interpreted as SQL code.
+  </p>
+  <ul>
+    <li>
+      <strong>Database-specific escaping</strong> - Use functions like
+      <code>mysqli_real_escape_string()</code> for MySQL
+    </li>
+    <li>
+      <strong>Use cautiously</strong> - Escaping is less secure than
+      parameterized queries
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Escaping Example (PHP/MySQL):</h3>
+    <p>
+      <code>
+        $username = mysqli_real_escape_string($conn, $username); $query =
+        "SELECT * FROM users WHERE username = '$username'";
+      </code>
+    </p>
+    <p>
+      Escaping prevents special characters from breaking the query, but
+      parameterized queries are preferred.
+    </p>
+  </div>
+
+  <h3>5. Hide Database Error Messages</h3>
+  <p>
+    Prevent detailed database error messages from being displayed to users, as
+    they can reveal schema details or confirm vulnerabilities.
+  </p>
+  <ul>
+    <li>
+      <strong>Log errors securely</strong> - Store detailed errors in server
+      logs
+    </li>
+    <li>
+      <strong>Show generic messages</strong> - Display user-friendly error
+      messages to clients
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Secure Error Handling Example:</h3>
+    <p>Instead of:</p>
+    <p>
+      <code>
+        try { // Execute query } catch (Exception $e) { echo "Database error: "
+        . $e->getMessage(); }
+      </code>
+    </p>
+    <p>Do this:</p>
+    <p>
+      <code>
+        try { // Execute query } catch (Exception $e) { log_error("Database
+        error: " . $e->getMessage()); // Log securely echo "An error occurred.
+        Please try again."; }
+      </code>
+    </p>
+  </div>
+
+  <h3>6. Apply Least Privilege Principle</h3>
+  <p>
+    Limit database user permissions to minimize the impact of a successful
+    injection.
+  </p>
+  <ul>
+    <li>
+      <strong>Restrict operations</strong> - Grant only necessary permissions
+      (e.g., SELECT for read-only queries)
+    </li>
+    <li>
+      <strong>Separate accounts</strong> - Use different database users for
+      different application functions
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Least Privilege Example (MySQL):</h3>
+    <p>
+      <code>
+        GRANT SELECT ON myappdb.users TO 'readonly_user'@'localhost' IDENTIFIED
+        BY 'secure_password';
+      </code>
+    </p>
+    <p>
+      This user can only read the users table, reducing the risk of data
+      modification.
+    </p>
+  </div>
+
+  <h3>7. Deploy Web Application Firewalls (WAFs)</h3>
+  <p>
+    WAFs monitor and filter incoming traffic to block suspicious SQL injection
+    patterns.
+  </p>
+  <ul>
+    <li>
+      <strong>Pattern matching</strong> - Detects common SQL keywords or
+      malicious payloads
+    </li>
+    <li>
+      <strong>Behavioral analysis</strong> - Identifies anomalous request
+      patterns
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>WAF Rule Example:</h3>
+    <p>A WAF might block requests containing:</p>
+    <p><code>UNION SELECT</code> or <code>1=1 --</code></p>
+    <p>
+      This stops common SQL injection payloads before they reach the
+      application.
+    </p>
+  </div>
+
+  <h3>8. Regularly Update and Patch Software</h3>
+  <p>
+    Keep databases, frameworks, and libraries up to date to mitigate known
+    vulnerabilities.
+  </p>
+  <ul>
+    <li>
+      <strong>Apply security patches</strong> - Update database servers promptly
+    </li>
+    <li>
+      <strong>Use supported versions</strong> - Avoid end-of-life software
+    </li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Defense in Depth</h3>
+    <p>
+      Relying on a single prevention technique is insufficient. Combine multiple
+      layers of defense, such as parameterized queries, input validation, and
+      WAFs, to create a robust security posture against SQL injection attacks.
+    </p>
+  </div>
+
+  <h2>Step-by-Step Prevention Strategy</h2>
+  <p>Follow these steps to secure an application against SQL injection:</p>
+  <ol>
+    <li>
+      <strong>Audit existing code</strong> - Identify and replace concatenated
+      SQL queries
+    </li>
+    <li>
+      <strong>Implement parameterized queries</strong> - Refactor queries to use
+      prepared statements
+    </li>
+    <li>
+      <strong>Add input validation</strong> - Enforce strict input formats
+    </li>
+    <li>
+      <strong>Configure error handling</strong> - Suppress detailed error
+      messages
+    </li>
+    <li>
+      <strong>Limit database permissions</strong> - Apply least privilege to
+      database accounts
+    </li>
+    <li>
+      <strong>Deploy a WAF</strong> - Add an additional layer of protection
+    </li>
+    <li>
+      <strong>Conduct regular security testing</strong> - Use penetration
+      testing to identify vulnerabilities
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Comprehensive Prevention Example:</h3>
+    <p>Secure login implementation (PHP/PDO):</p>
+    <p>
+      <code>
+        // Input validation if (!preg_match("/^[a-zA-Z0-9]+$/", $username)) {
+        die("Invalid username format"); } // Parameterized query try { $stmt =
+        $pdo->prepare("SELECT * FROM users WHERE username = ? AND password =
+        ?"); $stmt->execute([$username, hash('sha256', $password)]); $user =
+        $stmt->fetch(); } catch (Exception $e) { log_error("Database error: " .
+        $e->getMessage()); die("An error occurred. Please try again."); }
+      </code>
+    </p>
+    <p>
+      This combines validation, parameterized queries, and secure error
+      handling.
+    </p>
+  </div>
+
+  <h2>Real-World Example</h2>
+  <p>A real-world case of SQL injection prevention:</p>
+  <ol>
+    <li>
+      A web application used raw SQL queries:
+      <code>SELECT * FROM users WHERE id = $id</code>
+    </li>
+    <li>
+      Penetration testing revealed SQL injection:
+      <code>id=1 UNION SELECT password FROM users</code>
+    </li>
+    <li>Developers refactored the code to use parameterized queries</li>
+    <li>Input validation was added to ensure <code>id</code> was numeric</li>
+    <li>Error messages were hidden, and a WAF was deployed</li>
+    <li>Subsequent tests confirmed the vulnerability was eliminated</li>
+  </ol>
+
+  <div class="danger-box">
+    <h3>Continuous Monitoring</h3>
+    <p>
+      SQL injection prevention is not a one-time task. Regularly monitor
+      application logs, perform security audits, and update software to address
+      new vulnerabilities and attack techniques.
+    </p>
+  </div>
+</div>

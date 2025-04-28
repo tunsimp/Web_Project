@@ -1,16 +1,13 @@
 // routes/indexRoutes.js
 const express = require("express");
 const router = express.Router();
-const checkAuth = require("../middleware/checkAuth");
+
 const labController = require("../controllers/labController");
 const userController = require("../controllers/userController");
 const {
   createContainerController,
   deleteContainer,
 } = require("../controllers/dockerController");
-
-// Apply checkAuth middleware to all routes in this router
-router.use(checkAuth);
 
 // Now you can remove checkAuth from individual routes
 router.get("/home", (req, res) => {

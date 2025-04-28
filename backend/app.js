@@ -4,7 +4,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const indexRoutes = require("./routes/indexRoutes");
 const lessonRoutes = require("./routes/lessonRoutes"); // Add this line
-
+const checkAuth = require("./middleware/checkAuth");
 const app = express();
 
 // Enable CORS
@@ -23,6 +23,8 @@ app.use(cookieParser());
 
 // Use routes
 app.use("/api/auth", authRoutes);
+// Apply checkAuth middleware to all routes
+app.use(checkAuth);
 app.use("/api/route", indexRoutes);
 app.use("/api/lessons", lessonRoutes); // Add this line
 
