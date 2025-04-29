@@ -118,6 +118,18 @@ exports.getLessonPage = async (req, res) => {
       .json({ message: "Failed to fetch lesson page", error: error.message });
   }
 };
+exports.getAllLessonPages = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const pages = await LessonPage.getAllByLessonId(lessonId);
+    res.status(200).json(pages);
+  } catch (error) {
+    console.error("Error fetching lesson pages:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch lesson pages", error: error.message });
+  }
+};
 exports.getLessonPageContent = async (req, res) => {
   console.log("dang tim content");
   try {

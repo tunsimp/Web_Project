@@ -10,6 +10,8 @@ import Lab from './Lab/Lab';
 import Paths from './Paths/Paths';
 import Account from './Account/Account';
 import LessonView from './Lesson/LessonView';
+import LessonEditor from './Lesson/LessonEditor';
+import LessonCreate from './Lesson/LessonCreate';
 function App() {
   return (
     <BrowserRouter>
@@ -25,6 +27,8 @@ function App() {
         </Route>
         <Route element={<ProtectedRoute requiredRole="admin" />}>
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/lesson/:lessonId" element={<LessonEditor />} />
+          <Route path="/admin/lesson/new" element={<LessonCreate />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

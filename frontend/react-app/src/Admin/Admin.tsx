@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from "../NavBar/NavBar";
 import './Admin.css';
+
+interface LessonData {
+  id: number;
+  title: string;
+  description: string;
+}
+
 const Admin = () => {
-    const [lessons, setLessons] = useState([]);
+    const [lessons, setLessons] = useState<LessonData[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchLessons = async () => {
             try {
-                // Replace with your actual API endpoint
-                const response = await axios.get('http://localhost:5000/api/lessons',{withCredentials: true});
-                // Transform the response data to array format for easier rendering
+                const response = await axios.get('http://localhost:5000/api/lessons', { withCredentials: true });
                 const lessonsArray = Object.keys(response.data).map(key => ({
                     id: key,
                     ...response.data[key]
@@ -27,6 +34,10 @@ const Admin = () => {
 
         fetchLessons();
     }, []);
+
+    const handleEdit = (id: number) => {
+        navigate(`/admin/lesson/${id}`);
+    };
 
     return (
         <>
@@ -58,7 +69,10 @@ const Admin = () => {
                                     <td>{lesson.id}</td>
                                     <td>{lesson.title}</td>
                                     <td>{lesson.description}</td>
-                                    <td><button>Edit</button><button>Delete</button></td>
+                                    <td>
+                                        <button onClick={() => handleEdit(lesson.id)}>Edit</button>
+                                        <button>Delete</button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

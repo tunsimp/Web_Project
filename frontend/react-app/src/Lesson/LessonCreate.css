@@ -1,0 +1,197 @@
+/* LessonCreate.css */
+
+.lesson-create-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+h2 {
+  color: #ffffff;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+h3 {
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.lesson-details-section,
+.lesson-pages-section {
+  width: 100%;
+  background-color: #1e1e3f;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 35% 65%;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: left;
+  padding-right: 15px;
+}
+
+label::after {
+  content: " *";
+  color: #ff0000;
+}
+
+input,
+textarea {
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #434459;
+  color: #ffffff;
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.lesson-page {
+  background-color: #24243c;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.add-page-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  display: block;
+  margin: 20px auto;
+}
+
+.remove-page-btn {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.submit-btn {
+  margin: auto;
+  width: 150px;
+  height: 40px;
+  background-color: rgb(255, 255, 255);
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #24243c;
+  cursor: pointer;
+}
+
+/* Hover effects */
+.add-page-btn:hover {
+  background-color: #45a049;
+}
+
+.remove-page-btn:hover {
+  background-color: #d32f2f;
+}
+
+.submit-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* Focus styles */
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.success-message {
+  color: #4ade80;
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .form-group {
+    grid-template-columns: 100%;
+    grid-gap: 5px;
+  }
+
+  .lesson-details-section,
+  .lesson-pages-section {
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+}

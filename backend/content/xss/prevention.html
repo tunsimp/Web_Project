@@ -1,215 +1,208 @@
-<div class="lesson-view-content">
-  <h1>Preventing Cross-Site Scripting (XSS)</h1>
+<h1>Preventing Cross-Site Scripting (XSS)</h1>
 
-  <div class="definition-box">
-    <h2>What is XSS Prevention?</h2>
-    <p>
-      XSS prevention involves implementing security controls and coding
-      practices that protect web applications from Cross-Site Scripting
-      vulnerabilities. Proper prevention requires a defense-in-depth approach
-      that includes input validation, output encoding, and additional security
-      measures.
-    </p>
-  </div>
+<div class="definition-box">
+  <h2>What is XSS Prevention?</h2>
+  <p>
+    XSS prevention involves implementing security controls and coding practices
+    that protect web applications from Cross-Site Scripting vulnerabilities.
+    Proper prevention requires a defense-in-depth approach that includes input
+    validation, output encoding, and additional security measures.
+  </p>
+</div>
 
-  <h2>Core XSS Prevention Principles</h2>
-  <p>Effective XSS prevention is built on three fundamental principles:</p>
-  <ol>
-    <li>
-      <strong>Input Validation</strong> - Reject known malicious and unexpected
-      inputs
-    </li>
-    <li>
-      <strong>Output Encoding</strong> - Ensure dynamic content cannot be
-      interpreted as executable code
-    </li>
-    <li>
-      <strong>Defense in Depth</strong> - Apply multiple layers of protection
-    </li>
-  </ol>
+<h2>Core XSS Prevention Principles</h2>
+<p>Effective XSS prevention is built on three fundamental principles:</p>
+<ol>
+  <li>
+    <strong>Input Validation</strong> - Reject known malicious and unexpected
+    inputs
+  </li>
+  <li>
+    <strong>Output Encoding</strong> - Ensure dynamic content cannot be
+    interpreted as executable code
+  </li>
+  <li>
+    <strong>Defense in Depth</strong> - Apply multiple layers of protection
+  </li>
+</ol>
 
-  <div class="example-box">
-    <h3>Context Matters:</h3>
-    <p>Different encoding is needed depending on where data is inserted:</p>
-    <p><code>HTML context: &lt; becomes &amp;lt;</code></p>
-    <p><code>Attribute context: " becomes &amp;quot;</code></p>
-    <p><code>JavaScript context: \' becomes \\\'</code></p>
-    <p><code>CSS context: encoding is different yet again</code></p>
-    <p><code>URL context: requires URL encoding</code></p>
-  </div>
+<div class="example-box">
+  <h3>Context Matters:</h3>
+  <p>Different encoding is needed depending on where data is inserted:</p>
+  <p><code>HTML context: &lt; becomes &amp;lt;</code></p>
+  <p><code>Attribute context: " becomes &amp;quot;</code></p>
+  <p><code>JavaScript context: \' becomes \\\'</code></p>
+  <p><code>CSS context: encoding is different yet again</code></p>
+  <p><code>URL context: requires URL encoding</code></p>
+</div>
 
-  <h2>Input Validation Strategies</h2>
-  <p>Always validate user input on the server side using:</p>
-  <ul>
-    <li>
-      <strong>Whitelist validation</strong> - Allow only known good inputs
-      (preferred approach)
-    </li>
-    <li>
-      <strong>Data type validation</strong> - Ensure inputs match expected types
-      (numbers, dates, etc.)
-    </li>
-    <li>
-      <strong>Range checking</strong> - Verify numeric inputs fall within
-      acceptable ranges
-    </li>
-    <li>
-      <strong>Format validation</strong> - Confirm inputs match expected
-      patterns (e.g., email format)
-    </li>
-    <li>
-      <strong>Length constraints</strong> - Limit input length to prevent buffer
-      overflows
-    </li>
-  </ul>
+<h2>Input Validation Strategies</h2>
+<p>Always validate user input on the server side using:</p>
+<ul>
+  <li>
+    <strong>Whitelist validation</strong> - Allow only known good inputs
+    (preferred approach)
+  </li>
+  <li>
+    <strong>Data type validation</strong> - Ensure inputs match expected types
+    (numbers, dates, etc.)
+  </li>
+  <li>
+    <strong>Range checking</strong> - Verify numeric inputs fall within
+    acceptable ranges
+  </li>
+  <li>
+    <strong>Format validation</strong> - Confirm inputs match expected patterns
+    (e.g., email format)
+  </li>
+  <li>
+    <strong>Length constraints</strong> - Limit input length to prevent buffer
+    overflows
+  </li>
+</ul>
 
-  <div class="danger-box">
-    <h3>Blacklisting Is Not Enough</h3>
-    <p>
-      Never rely solely on blacklisting (blocking known bad inputs). Attackers
-      constantly develop new techniques to bypass blacklists. Whitelisting
-      (allowing only known good patterns) is much more effective for preventing
-      XSS.
-    </p>
-  </div>
+<div class="danger-box">
+  <h3>Blacklisting Is Not Enough</h3>
+  <p>
+    Never rely solely on blacklisting (blocking known bad inputs). Attackers
+    constantly develop new techniques to bypass blacklists. Whitelisting
+    (allowing only known good patterns) is much more effective for preventing
+    XSS.
+  </p>
+</div>
 
-  <h2>Output Encoding Techniques</h2>
-  <p>Always encode dynamic data before inserting it into:</p>
-  <ol>
-    <li><strong>HTML contexts</strong> - Encode all HTML special characters</li>
-    <li><strong>HTML attribute contexts</strong> - Apply attribute encoding</li>
-    <li>
-      <strong>JavaScript contexts</strong> - Use JavaScript string encoding
-    </li>
-    <li><strong>CSS contexts</strong> - Apply CSS hex encoding</li>
-    <li><strong>URL contexts</strong> - Use URL encoding</li>
-  </ol>
+<h2>Output Encoding Techniques</h2>
+<p>Always encode dynamic data before inserting it into:</p>
+<ol>
+  <li><strong>HTML contexts</strong> - Encode all HTML special characters</li>
+  <li><strong>HTML attribute contexts</strong> - Apply attribute encoding</li>
+  <li><strong>JavaScript contexts</strong> - Use JavaScript string encoding</li>
+  <li><strong>CSS contexts</strong> - Apply CSS hex encoding</li>
+  <li><strong>URL contexts</strong> - Use URL encoding</li>
+</ol>
 
-  <div class="example-box">
-    <h3>Output Encoding Example:</h3>
-    <p>Instead of:</p>
-    <p>
-      <code
-        >document.getElementById("welcome").innerHTML = "Hello, " +
-        userName;</code
-      >
-    </p>
-    <p>Do this:</p>
-    <p>
-      <code>
-        // Using a library like DOMPurify or your framework's sanitization<br />
-        const sanitizedName = DOMPurify.sanitize(userName);<br />
-        document.getElementById("welcome").textContent = "Hello, " +
-        sanitizedName;
-      </code>
-    </p>
-  </div>
+<div class="example-box">
+  <h3>Output Encoding Example:</h3>
+  <p>Instead of:</p>
+  <p>
+    <code
+      >document.getElementById("welcome").innerHTML = "Hello, " +
+      userName;</code
+    >
+  </p>
+  <p>Do this:</p>
+  <p>
+    <code>
+      // Using a library like DOMPurify or your framework's sanitization<br />
+      const sanitizedName = DOMPurify.sanitize(userName);<br />
+      document.getElementById("welcome").textContent = "Hello, " +
+      sanitizedName;
+    </code>
+  </p>
+</div>
 
-  <h2>Framework-Based XSS Protection</h2>
-  <p>Modern frameworks provide built-in XSS protection:</p>
-  <ul>
-    <li><strong>React</strong> - Automatically escapes values in JSX</li>
-    <li>
-      <strong>Angular</strong> - Uses contextual encoding and sanitization
-    </li>
-    <li><strong>Vue</strong> - Automatically escapes HTML in templates</li>
-    <li><strong>Django</strong> - Auto-escapes template variables</li>
-    <li><strong>Laravel</strong> - Blade templates escape output by default</li>
-  </ul>
+<h2>Framework-Based XSS Protection</h2>
+<p>Modern frameworks provide built-in XSS protection:</p>
+<ul>
+  <li><strong>React</strong> - Automatically escapes values in JSX</li>
+  <li><strong>Angular</strong> - Uses contextual encoding and sanitization</li>
+  <li><strong>Vue</strong> - Automatically escapes HTML in templates</li>
+  <li><strong>Django</strong> - Auto-escapes template variables</li>
+  <li><strong>Laravel</strong> - Blade templates escape output by default</li>
+</ul>
 
-  <div class="danger-box">
-    <h3>Bypassing Framework Protection</h3>
-    <p>
-      Be cautious with functions that bypass framework protections like React's
-      dangerouslySetInnerHTML, Angular's [innerHTML], or Vue's v-html directive.
-      These should be used sparingly and only with properly sanitized data.
-    </p>
-  </div>
+<div class="danger-box">
+  <h3>Bypassing Framework Protection</h3>
+  <p>
+    Be cautious with functions that bypass framework protections like React's
+    dangerouslySetInnerHTML, Angular's [innerHTML], or Vue's v-html directive.
+    These should be used sparingly and only with properly sanitized data.
+  </p>
+</div>
 
-  <h2>Content Security Policy (CSP)</h2>
-  <p>Implement CSP headers to provide an additional layer of protection:</p>
-  <ul>
-    <li>Restrict which domains can serve executable scripts</li>
-    <li>Disable inline JavaScript and eval()</li>
-    <li>Control which domains can serve images, styles, fonts, etc.</li>
-    <li>Report CSP violations to identify potential attacks</li>
-  </ul>
+<h2>Content Security Policy (CSP)</h2>
+<p>Implement CSP headers to provide an additional layer of protection:</p>
+<ul>
+  <li>Restrict which domains can serve executable scripts</li>
+  <li>Disable inline JavaScript and eval()</li>
+  <li>Control which domains can serve images, styles, fonts, etc.</li>
+  <li>Report CSP violations to identify potential attacks</li>
+</ul>
 
-  <div class="example-box">
-    <h3>Basic CSP Header Example:</h3>
-    <p>
-      <code
-        >Content-Security-Policy: default-src 'self'; script-src 'self'
-        https://trusted-cdn.com; object-src 'none';</code
-      >
-    </p>
-    <p>
-      This policy only allows scripts from the same origin and a specific
-      trusted CDN, and blocks object tags entirely.
-    </p>
-  </div>
+<div class="example-box">
+  <h3>Basic CSP Header Example:</h3>
+  <p>
+    <code
+      >Content-Security-Policy: default-src 'self'; script-src 'self'
+      https://trusted-cdn.com; object-src 'none';</code
+    >
+  </p>
+  <p>
+    This policy only allows scripts from the same origin and a specific trusted
+    CDN, and blocks object tags entirely.
+  </p>
+</div>
 
-  <h2>Additional XSS Defenses</h2>
-  <p>Complement your primary protections with these measures:</p>
-  <ul>
-    <li>
-      <strong>HTTPOnly Cookies</strong> - Prevent JavaScript access to session
-      cookies
-    </li>
-    <li>
-      <strong>X-XSS-Protection Header</strong> - Enable browser's built-in XSS
-      filters
-    </li>
-    <li>
-      <strong>Subresource Integrity (SRI)</strong> - Verify external resources
-      haven't been tampered with
-    </li>
-    <li>
-      <strong>Sanitization Libraries</strong> - Use libraries like DOMPurify for
-      HTML sanitization
-    </li>
-    <li>
-      <strong>Regular Security Testing</strong> - Perform automated and manual
-      security testing
-    </li>
-  </ul>
+<h2>Additional XSS Defenses</h2>
+<p>Complement your primary protections with these measures:</p>
+<ul>
+  <li>
+    <strong>HTTPOnly Cookies</strong> - Prevent JavaScript access to session
+    cookies
+  </li>
+  <li>
+    <strong>X-XSS-Protection Header</strong> - Enable browser's built-in XSS
+    filters
+  </li>
+  <li>
+    <strong>Subresource Integrity (SRI)</strong> - Verify external resources
+    haven't been tampered with
+  </li>
+  <li>
+    <strong>Sanitization Libraries</strong> - Use libraries like DOMPurify for
+    HTML sanitization
+  </li>
+  <li>
+    <strong>Regular Security Testing</strong> - Perform automated and manual
+    security testing
+  </li>
+</ul>
 
-  <div class="example-box">
-    <h3>Using HTTP-Only Cookies:</h3>
-    <p>
-      <code
-        >Set-Cookie: sessionId=abc123; Path=/; HttpOnly; Secure;
-        SameSite=Strict</code
-      >
-    </p>
-    <p>
-      This cookie cannot be accessed via JavaScript, helping protect against
-      session hijacking if XSS occurs.
-    </p>
-  </div>
+<div class="example-box">
+  <h3>Using HTTP-Only Cookies:</h3>
+  <p>
+    <code
+      >Set-Cookie: sessionId=abc123; Path=/; HttpOnly; Secure;
+      SameSite=Strict</code
+    >
+  </p>
+  <p>
+    This cookie cannot be accessed via JavaScript, helping protect against
+    session hijacking if XSS occurs.
+  </p>
+</div>
 
-  <h2>XSS Prevention Checklist</h2>
-  <p>Use this checklist to ensure comprehensive protection:</p>
-  <ol>
-    <li>Validate all user inputs server-side</li>
-    <li>Apply context-appropriate output encoding</li>
-    <li>Implement a strict Content Security Policy</li>
-    <li>Use modern framework sanitization features</li>
-    <li>Set HTTPOnly flag on sensitive cookies</li>
-    <li>Enable browser XSS filters</li>
-    <li>Sanitize HTML when rich text is required</li>
-    <li>Prefer safer JavaScript APIs (textContent over innerHTML)</li>
-    <li>Perform regular security testing for XSS</li>
-    <li>Keep all frameworks and libraries updated</li>
-  </ol>
+<h2>XSS Prevention Checklist</h2>
+<p>Use this checklist to ensure comprehensive protection:</p>
+<ol>
+  <li>Validate all user inputs server-side</li>
+  <li>Apply context-appropriate output encoding</li>
+  <li>Implement a strict Content Security Policy</li>
+  <li>Use modern framework sanitization features</li>
+  <li>Set HTTPOnly flag on sensitive cookies</li>
+  <li>Enable browser XSS filters</li>
+  <li>Sanitize HTML when rich text is required</li>
+  <li>Prefer safer JavaScript APIs (textContent over innerHTML)</li>
+  <li>Perform regular security testing for XSS</li>
+  <li>Keep all frameworks and libraries updated</li>
+</ol>
 
-  <div class="danger-box">
-    <h3>Defense in Depth</h3>
-    <p>
-      Never rely on a single prevention technique. Implement multiple layers of
-      defense so that if one protection fails, others can still prevent or
-      mitigate the impact of XSS attacks. Always assume that each individual
-      protection might be bypassed.
-    </p>
-  </div>
+<div class="danger-box">
+  <h3>Defense in Depth</h3>
+  <p>
+    Never rely on a single prevention technique. Implement multiple layers of
+    defense so that if one protection fails, others can still prevent or
+    mitigate the impact of XSS attacks. Always assume that each individual
+    protection might be bypassed.
+  </p>
 </div>

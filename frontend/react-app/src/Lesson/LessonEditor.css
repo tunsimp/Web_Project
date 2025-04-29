@@ -1,0 +1,10 @@
+.lesson-editor {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+.lesson-meta-data {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}

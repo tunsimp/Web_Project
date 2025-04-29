@@ -11,9 +11,7 @@
 }
 
 .lesson-card {
-  background-color: var(
-    --card-background
-  ); /* Keep same background for all cards */
+  background-color: var(--card-background);
   border-radius: 40px;
   padding: 2rem;
   flex: 0 0 calc(33.333% - 1.4rem);
@@ -21,20 +19,19 @@
   box-sizing: border-box;
   margin-bottom: 2rem;
   transition: transform 0.3s, box-shadow 0.3s;
-  position: relative; /* For positioning the completion badge */
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Lesson completion status styles - keep the same background */
 .lesson-card.completed {
-  border-left: 4px solid #4caf50; /* Green border on left */
-  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3); /* Subtle glow */
+  border-left: 4px solid #4caf50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
 }
 
 .lesson-card:not(.completed) {
-  border-left: 4px solid #9500d1; /* Purple border for in progress/not started */
+  border-left: 4px solid #9500d1;
 }
 
 .completion-badge {
@@ -88,7 +85,7 @@
 }
 
 .start-lesson-btn {
-  background-color: #9500d1; /* Purple for start button */
+  background-color: #9500d1;
   color: white;
   border: none;
   padding: 0.6rem 1.2rem;
@@ -102,10 +99,9 @@
 }
 
 .start-lesson-btn:hover {
-  background-color: #7b00ab; /* Darker purple on hover */
+  background-color: #7b00ab;
 }
 
-/* Completed lesson button styling */
 .completed .start-lesson-btn {
   background-color: #4caf50;
 }

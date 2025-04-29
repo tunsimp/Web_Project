@@ -32,7 +32,6 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
       const response = await axios.get("http://localhost:5000/api/route/account", {
         withCredentials: true,
       });
-      console.log("User data:", response.data);
       if (response.data.success) {
         const fetchedData = {
           user_id: response.data.user.user_id,

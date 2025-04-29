@@ -17,6 +17,7 @@ router.get("/user/progress", lessonController.getUserLessonsWithProgress);
 
 // Lesson page routes
 router.get("/:lessonId/pages/:pageNumber", lessonController.getLessonPage);
+router.get("/:lessonId/pages", lessonController.getAllLessonPages);
 router.post("/:lessonId/pages", lessonController.createLessonPage);
 router.put("/pages/:pageId", lessonController.updateLessonPage);
 router.delete("/pages/:pageId", lessonController.deleteLessonPage);

@@ -1,219 +1,214 @@
-<div class="lesson-view-content">
-  <h1>DOM-based Cross-Site Scripting (XSS)</h1>
+<h1>DOM-based Cross-Site Scripting (XSS)</h1>
 
-  <div class="definition-box">
-    <h2>What is DOM-based XSS?</h2>
-    <p>
-      DOM-based XSS is a type of Cross-Site Scripting attack where the
-      vulnerability exists in client-side code rather than server-side code. The
-      attack payload is executed as a result of modifying the DOM environment in
-      the victim's browser. The page itself does not change, but the client-side
-      code contained in the page runs differently due to malicious modifications
-      of the DOM environment.
-    </p>
-  </div>
-
-  <h2>How DOM-based XSS Works</h2>
-  <p>Unlike traditional XSS, DOM-based XSS follows this pattern:</p>
-  <ol>
-    <li>
-      The website contains client-side JavaScript that processes data from an
-      untrusted source
-    </li>
-    <li>
-      The script takes input from a source (like URL parameters) and writes it
-      to a DOM sink
-    </li>
-    <li>
-      When this input contains malicious content, it gets executed in the
-      context of the user's session
-    </li>
-    <li>
-      The malicious script executes with the same permissions as the legitimate
-      scripts on the page
-    </li>
-  </ol>
-
-  <div class="example-box">
-    <h3>DOM Source and Sink Example:</h3>
-    <p>Common DOM sources (where untrusted data comes from):</p>
-    <p>
-      <code
-        >document.URL, document.location.href, document.referrer,
-        location.search</code
-      >
-    </p>
-    <p>Common DOM sinks (where data gets processed insecurely):</p>
-    <p>
-      <code
-        >document.write(), innerHTML, outerHTML, eval(), setTimeout(),
-        setInterval()</code
-      >
-    </p>
-    <p>Simple vulnerable code example:</p>
-    <p>
-      <code>
-        var pos = document.URL.indexOf("name=") + 5;<br />
-        var name = document.URL.substring(pos, document.URL.length);<br />
-        document.write("Hello " + name + "!");
-      </code>
-    </p>
-  </div>
-
-  <h2>What Makes DOM-based XSS Different</h2>
+<div class="definition-box">
+  <h2>What is DOM-based XSS?</h2>
   <p>
-    DOM-based XSS differs from Reflected and Stored XSS in several key ways:
+    DOM-based XSS is a type of Cross-Site Scripting attack where the
+    vulnerability exists in client-side code rather than server-side code. The
+    attack payload is executed as a result of modifying the DOM environment in
+    the victim's browser. The page itself does not change, but the client-side
+    code contained in the page runs differently due to malicious modifications
+    of the DOM environment.
   </p>
-  <ul>
-    <li>
-      The payload is <strong>never sent to the server</strong> - it's entirely
-      processed by the browser
-    </li>
-    <li>Server-side XSS defenses are ineffective against DOM-based attacks</li>
-    <li>
-      The vulnerability exists in the
-      <strong>client-side JavaScript</strong> code
-    </li>
-    <li>Traditional web application firewalls may not detect these attacks</li>
-    <li>The attack can be executed even when the website uses HTTPS</li>
-  </ul>
+</div>
 
-  <div class="danger-box">
-    <h3>Hidden Vulnerability</h3>
-    <p>
-      DOM-based XSS is often harder to detect because the vulnerability doesn't
-      appear in server responses. Standard security testing that only examines
-      HTTP requests and responses may miss these vulnerabilities entirely.
-    </p>
-  </div>
+<h2>How DOM-based XSS Works</h2>
+<p>Unlike traditional XSS, DOM-based XSS follows this pattern:</p>
+<ol>
+  <li>
+    The website contains client-side JavaScript that processes data from an
+    untrusted source
+  </li>
+  <li>
+    The script takes input from a source (like URL parameters) and writes it to
+    a DOM sink
+  </li>
+  <li>
+    When this input contains malicious content, it gets executed in the context
+    of the user's session
+  </li>
+  <li>
+    The malicious script executes with the same permissions as the legitimate
+    scripts on the page
+  </li>
+</ol>
 
-  <h2>Real-world Attack Scenario</h2>
-  <p>A typical DOM-based XSS attack might work as follows:</p>
-  <ol>
-    <li>
-      A website uses JavaScript to customize the user experience based on URL
-      parameters
-    </li>
-    <li>For example: <code>https://example.com/page?default=English</code></li>
-    <li>
-      The client-side code processes this parameter:
-      <code>document.getElementById("language").innerHTML = language;</code>
-    </li>
-    <li>
-      An attacker crafts a malicious URL:
-      <code
-        >https://example.com/page?default=&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code
-      >
-    </li>
-    <li>
-      When a victim clicks this link, the JavaScript executes in their browser
-      with the permissions of example.com
-    </li>
-  </ol>
+<div class="example-box">
+  <h3>DOM Source and Sink Example:</h3>
+  <p>Common DOM sources (where untrusted data comes from):</p>
+  <p>
+    <code
+      >document.URL, document.location.href, document.referrer,
+      location.search</code
+    >
+  </p>
+  <p>Common DOM sinks (where data gets processed insecurely):</p>
+  <p>
+    <code
+      >document.write(), innerHTML, outerHTML, eval(), setTimeout(),
+      setInterval()</code
+    >
+  </p>
+  <p>Simple vulnerable code example:</p>
+  <p>
+    <code>
+      var pos = document.URL.indexOf("name=") + 5;<br />
+      var name = document.URL.substring(pos, document.URL.length);<br />
+      document.write("Hello " + name + "!");
+    </code>
+  </p>
+</div>
 
-  <div class="example-box">
-    <h3>DOM-based XSS with Hash Fragment:</h3>
-    <p>
-      Because DOM-based XSS often uses hash fragments that aren't sent to the
-      server:
-    </p>
-    <p>
-      <code
-        >https://example.com/page#&lt;script&gt;alert('XSS')&lt;/script&gt;</code
-      >
-    </p>
-    <p>
-      JavaScript code that manipulates the page based on window.location.hash
-      would be vulnerable
-    </p>
-    <p>
-      <code>
-        // Vulnerable code<br />
-        var hashValue = window.location.hash.substring(1);<br />
-        document.getElementById("hashDisplay").innerHTML = hashValue;
-      </code>
-    </p>
-  </div>
+<h2>What Makes DOM-based XSS Different</h2>
+<p>DOM-based XSS differs from Reflected and Stored XSS in several key ways:</p>
+<ul>
+  <li>
+    The payload is <strong>never sent to the server</strong> - it's entirely
+    processed by the browser
+  </li>
+  <li>Server-side XSS defenses are ineffective against DOM-based attacks</li>
+  <li>
+    The vulnerability exists in the
+    <strong>client-side JavaScript</strong> code
+  </li>
+  <li>Traditional web application firewalls may not detect these attacks</li>
+  <li>The attack can be executed even when the website uses HTTPS</li>
+</ul>
 
-  <h2>Common DOM-based XSS Vulnerabilities</h2>
-  <p>DOM-based XSS vulnerabilities are often found in:</p>
-  <ul>
-    <li><strong>Client-side redirects</strong> based on URL parameters</li>
-    <li>
-      <strong>DOM manipulation</strong> that inserts user-controlled data into
-      the page
-    </li>
-    <li>
-      <strong>Client-side templating</strong> libraries with weak sanitization
-    </li>
-    <li><strong>Dynamic script generation</strong> that includes user data</li>
-    <li>
-      <strong>Single-Page Applications (SPAs)</strong> that process URL
-      parameters client-side
-    </li>
-    <li>
-      <strong>JavaScript frameworks</strong> that don't properly sanitize
-      bindings
-    </li>
-  </ul>
+<div class="danger-box">
+  <h3>Hidden Vulnerability</h3>
+  <p>
+    DOM-based XSS is often harder to detect because the vulnerability doesn't
+    appear in server responses. Standard security testing that only examines
+    HTTP requests and responses may miss these vulnerabilities entirely.
+  </p>
+</div>
 
-  <div class="danger-box">
-    <h3>Modern Web Applications Risk</h3>
-    <p>
-      As web applications increasingly move logic to the client side with
-      JavaScript frameworks and SPAs, the risk of DOM-based XSS vulnerabilities
-      grows. Always consider client-side security when developing modern web
-      applications.
-    </p>
-  </div>
+<h2>Real-world Attack Scenario</h2>
+<p>A typical DOM-based XSS attack might work as follows:</p>
+<ol>
+  <li>
+    A website uses JavaScript to customize the user experience based on URL
+    parameters
+  </li>
+  <li>For example: <code>https://example.com/page?default=English</code></li>
+  <li>
+    The client-side code processes this parameter:
+    <code>document.getElementById("language").innerHTML = language;</code>
+  </li>
+  <li>
+    An attacker crafts a malicious URL:
+    <code
+      >https://example.com/page?default=&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code
+    >
+  </li>
+  <li>
+    When a victim clicks this link, the JavaScript executes in their browser
+    with the permissions of example.com
+  </li>
+</ol>
 
-  <h2>Prevention Techniques</h2>
-  <p>To prevent DOM-based XSS:</p>
-  <ol>
-    <li>
-      <strong>Avoid Dangerous Sinks</strong> - Don't use innerHTML, outerHTML,
-      document.write() with untrusted data
-    </li>
-    <li>
-      <strong>Use Safe JavaScript Methods</strong> - Use textContent instead of
-      innerHTML when displaying data
-    </li>
-    <li>
-      <strong>Input Encoding</strong> - Encode data from sources before placing
-      it in sinks
-    </li>
-    <li>
-      <strong>Content Security Policy (CSP)</strong> - Implement strict CSP
-      headers with nonce-based approaches
-    </li>
-    <li>
-      <strong>JavaScript Frameworks</strong> - Use modern frameworks that
-      automatically escape template variables
-    </li>
-    <li>
-      <strong>Client-Side Sanitization Libraries</strong> - Use libraries like
-      DOMPurify to sanitize HTML
-    </li>
-  </ol>
+<div class="example-box">
+  <h3>DOM-based XSS with Hash Fragment:</h3>
+  <p>
+    Because DOM-based XSS often uses hash fragments that aren't sent to the
+    server:
+  </p>
+  <p>
+    <code
+      >https://example.com/page#&lt;script&gt;alert('XSS')&lt;/script&gt;</code
+    >
+  </p>
+  <p>
+    JavaScript code that manipulates the page based on window.location.hash
+    would be vulnerable
+  </p>
+  <p>
+    <code>
+      // Vulnerable code<br />
+      var hashValue = window.location.hash.substring(1);<br />
+      document.getElementById("hashDisplay").innerHTML = hashValue;
+    </code>
+  </p>
+</div>
 
-  <div class="example-box">
-    <h3>Safe Alternative Code:</h3>
-    <p>Instead of using innerHTML, use safer alternatives:</p>
-    <p>
-      <code>
-        // Safe alternative<br />
-        var hashValue = window.location.hash.substring(1);<br />
-        document.getElementById("hashDisplay").textContent = hashValue;
-      </code>
-    </p>
-    <p>Or when using libraries:</p>
-    <p>
-      <code>
-        // Using DOMPurify<br />
-        var hashValue = window.location.hash.substring(1);<br />
-        var clean = DOMPurify.sanitize(hashValue);<br />
-        document.getElementById("hashDisplay").innerHTML = clean;
-      </code>
-    </p>
-  </div>
+<h2>Common DOM-based XSS Vulnerabilities</h2>
+<p>DOM-based XSS vulnerabilities are often found in:</p>
+<ul>
+  <li><strong>Client-side redirects</strong> based on URL parameters</li>
+  <li>
+    <strong>DOM manipulation</strong> that inserts user-controlled data into the
+    page
+  </li>
+  <li>
+    <strong>Client-side templating</strong> libraries with weak sanitization
+  </li>
+  <li><strong>Dynamic script generation</strong> that includes user data</li>
+  <li>
+    <strong>Single-Page Applications (SPAs)</strong> that process URL parameters
+    client-side
+  </li>
+  <li>
+    <strong>JavaScript frameworks</strong> that don't properly sanitize bindings
+  </li>
+</ul>
+
+<div class="danger-box">
+  <h3>Modern Web Applications Risk</h3>
+  <p>
+    As web applications increasingly move logic to the client side with
+    JavaScript frameworks and SPAs, the risk of DOM-based XSS vulnerabilities
+    grows. Always consider client-side security when developing modern web
+    applications.
+  </p>
+</div>
+
+<h2>Prevention Techniques</h2>
+<p>To prevent DOM-based XSS:</p>
+<ol>
+  <li>
+    <strong>Avoid Dangerous Sinks</strong> - Don't use innerHTML, outerHTML,
+    document.write() with untrusted data
+  </li>
+  <li>
+    <strong>Use Safe JavaScript Methods</strong> - Use textContent instead of
+    innerHTML when displaying data
+  </li>
+  <li>
+    <strong>Input Encoding</strong> - Encode data from sources before placing it
+    in sinks
+  </li>
+  <li>
+    <strong>Content Security Policy (CSP)</strong> - Implement strict CSP
+    headers with nonce-based approaches
+  </li>
+  <li>
+    <strong>JavaScript Frameworks</strong> - Use modern frameworks that
+    automatically escape template variables
+  </li>
+  <li>
+    <strong>Client-Side Sanitization Libraries</strong> - Use libraries like
+    DOMPurify to sanitize HTML
+  </li>
+</ol>
+
+<div class="example-box">
+  <h3>Safe Alternative Code:</h3>
+  <p>Instead of using innerHTML, use safer alternatives:</p>
+  <p>
+    <code>
+      // Safe alternative<br />
+      var hashValue = window.location.hash.substring(1);<br />
+      document.getElementById("hashDisplay").textContent = hashValue;
+    </code>
+  </p>
+  <p>Or when using libraries:</p>
+  <p>
+    <code>
+      // Using DOMPurify<br />
+      var hashValue = window.location.hash.substring(1);<br />
+      var clean = DOMPurify.sanitize(hashValue);<br />
+      document.getElementById("hashDisplay").innerHTML = clean;
+    </code>
+  </p>
 </div>
