@@ -1,0 +1,114 @@
+<div class="lesson-view-content">
+    <h1>Introduction to Server-Side Template Injection (SSTI)</h1>
+  
+    <div class="definition-box">
+      <h2>What is Server-Side Template Injection?</h2>
+      <p>
+        Server-Side Template Injection (SSTI) is a critical web application vulnerability that occurs when user-supplied input is improperly embedded into server-side templates, allowing attackers to inject and execute malicious template code. Unlike traditional injection attacks like SQL injection, SSTI exploits the template engine's logic, potentially leading to remote code execution (RCE), data exposure, or application compromise.
+      </p>
+    </div>
+  
+    <h2>How SSTI Works</h2>
+    <p>SSTI vulnerabilities arise when:</p>
+    <ol>
+      <li>The application uses a template engine (e.g., Jinja2, Twig, Freemarker) to render dynamic content</li>
+      <li>User input is directly incorporated into the template without proper sanitization</li>
+      <li>The template engine evaluates the injected input as executable code</li>
+    </ol>
+  
+    <div class="example-box">
+      <h3>Basic SSTI Example:</h3>
+      <p>Consider a web application using Python's Jinja2 template engine with a URL like:</p>
+      <p><code>https://example.com/greet?name=Alice</code></p>
+      <p>The server renders a template like:</p>
+      <p><code>Hello {{ name }}!</code></p>
+      <p>If an attacker inputs:</p>
+      <p><code>https://example.com/greet?name={{7*7}}</code></p>
+      <p>The output might be:</p>
+      <p><code>Hello 49!</code></p>
+      <p>This confirms the template engine evaluates the input, indicating a potential SSTI vulnerability.</p>
+    </div>
+  
+    <h2>Common Template Engines Vulnerable to SSTI</h2>
+    <p>Several popular template engines can be exploited if misconfigured:</p>
+    <ul>
+      <li><strong>Jinja2 (Python)</strong> - Widely used in Flask and Django applications</li>
+      <li><strong>Twig (PHP)</strong> - Common in Symfony and Drupal</li>
+      <li><strong>Freemarker (Java)</strong> - Used in Java-based web applications</li>
+      <li><strong>Velocity (Java)</strong> - Found in older Java frameworks</li>
+      <li><strong>ERB (Ruby)</strong> - Used in Ruby on Rails</li>
+    </ul>
+  
+    <div class="danger-box">
+      <h3>Severity of SSTI</h3>
+      <p>
+        SSTI can lead to severe consequences, including full server compromise, as attackers may execute arbitrary code, access sensitive files, or manipulate application logic. The impact depends on the template engine and server configuration.
+      </p>
+    </div>
+  
+    <h2>Typical Attack Scenarios</h2>
+    <p>Attackers exploit SSTI to achieve various malicious goals:</p>
+    <ul>
+      <li><strong>Remote Code Execution (RCE)</strong> - Executing system commands on the server</li>
+      <li><strong>Data Exposure</strong> - Accessing sensitive objects or variables in the template context</li>
+      <li><strong>Application Logic Bypass</strong> - Manipulating template logic to alter application behavior</li>
+      <li><strong>Denial of Service (DoS)</strong> - Overloading the server with complex template operations</li>
+    </ul>
+  
+    <div class="example-box">
+      <h3>Jinja2 SSTI Example (Advanced):</h3>
+      <p>An attacker might inject:</p>
+      <p><code>name={{ ''.__class__.__mro__[1].__subclasses__()[132].__init__.__globals__['system']('whoami') }}</code></p>
+      <p>This could execute the <code>whoami</code> command on the server, revealing the current user, demonstrating RCE.</p>
+    </div>
+  
+    <h2>Identifying SSTI Vulnerabilities</h2>
+    <p>To detect SSTI, attackers typically:</p>
+    <ol>
+      <li>Test inputs with template-specific syntax (e.g., <code>{{7*7}}</code>, <code>${7*7}</code>)</li>
+      <li>Observe whether the application evaluates the input (e.g., outputs <code>49</code>)</li>
+      <li>Escalate to more complex payloads to confirm the template engine and exploit capabilities</li>
+    </ol>
+  
+    <div class="example-box">
+      <h3>Testing for SSTI:</h3>
+      <p>Input: <code>https://example.com/page?input=${7*7}</code></p>
+      <p>If the response includes <code>49</code>, it suggests a Freemarker template engine vulnerability.</p>
+    </div>
+  
+    <h2>Real-World Impact</h2>
+    <p>A real-world example of an SSTI vulnerability:</p>
+    <ol>
+      <li>A web application allowed users to customize email templates via a web form</li>
+      <li>The form input was directly passed to a Jinja2 template without sanitization</li>
+      <li>An attacker injected: <code>{{ config.items() }}</code></p>
+      <li>The response exposed sensitive configuration details, including API keys</li>
+      <li>The attacker escalated to RCE by executing system commands, compromising the server</li>
+    </ol>
+  
+    <div class="danger-box">
+      <h3>Developer Awareness</h3>
+      <p>
+        Developers often underestimate SSTI risks, assuming template engines are inherently safe. However, improper handling of user input in templates can lead to catastrophic security breaches.
+      </p>
+    </div>
+  
+    <h2>Prevention Overview</h2>
+    <p>Key strategies to prevent SSTI include:</p>
+    <ol>
+      <li><strong>Sanitize User Inputs</strong> - Validate and escape all inputs before passing to templates</li>
+      <li><strong>Use Safe Template Configurations</strong> - Disable dangerous features in template engines</li>
+      <li><strong>Avoid Direct User Input in Templates</strong> - Use placeholders or safe rendering methods</li>
+      <li><strong>Implement Sandboxing</strong> - Restrict template engine capabilities</li>
+      <li><strong>Regular Security Testing</strong> - Test applications for SSTI vulnerabilities</li>
+    </ol>
+  
+    <div class="example-box">
+      <h3>Secure Template Example (Jinja2):</h3>
+      <p>Instead of:</p>
+      <p><code>Hello {{ name | safe }}!</code></p>
+      <p>Do this:</p>
+      <p><code>Hello {{ name | escape }}!</code></p>
+      <p>The <code>escape</code> filter ensures user input is treated as plain text, not executable code.</p>
+    </div>
+  </div>

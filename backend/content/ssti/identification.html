@@ -1,0 +1,299 @@
+<div class="lesson-view-content">
+  <h1>Identifying Server-Side Template Injection (SSTI)</h1>
+
+  <div class="definition-box">
+    <h2>What is SSTI Identification?</h2>
+    <p>
+      Identifying Server-Side Template Injection (SSTI) involves detecting
+      vulnerabilities in web applications where user input is unsafely embedded
+      into server-side templates, allowing malicious template code execution. By
+      testing inputs and analyzing application responses, security researchers
+      and attackers can confirm the presence of SSTI, identify the template
+      engine, and assess the potential for exploitation.
+    </p>
+  </div>
+
+  <h2>Why Identifying SSTI is Important</h2>
+  <p>Detecting SSTI vulnerabilities is critical because:</p>
+  <ol>
+    <li>
+      SSTI can lead to remote code execution (RCE), enabling full server
+      compromise
+    </li>
+    <li>
+      It may expose sensitive data, such as configuration details or user
+      information
+    </li>
+    <li>
+      Early identification allows developers to mitigate risks before
+      exploitation
+    </li>
+    <li>
+      Different template engines require specific payloads, making
+      identification key to effective testing
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Basic SSTI Detection Example:</h3>
+    <p>Consider a URL that renders user input in a template:</p>
+    <p><code>https://example.com/display?name=Alice</code></p>
+    <p>Test with a simple mathematical expression:</p>
+    <p><code>https://example.com/display?name={{7*7}}</code></p>
+    <p>If the response shows:</p>
+    <p><code>49</code></p>
+    <p>
+      This indicates the input was evaluated by the template engine, suggesting
+      an SSTI vulnerability.
+    </p>
+  </div>
+
+  <h2>Steps to Identify SSTI</h2>
+  <p>A systematic approach to identifying SSTI includes:</p>
+  <ol>
+    <li>
+      <strong>Test for template evaluation</strong> - Inject basic template
+      syntax to check for execution
+    </li>
+    <li>
+      <strong>Identify the template engine</strong> - Use engine-specific
+      payloads to determine the technology
+    </li>
+    <li>
+      <strong>Confirm exploitability</strong> - Escalate payloads to verify the
+      scope of the vulnerability
+    </li>
+    <li>
+      <strong>Analyze application context</strong> - Check where user input is
+      rendered (e.g., URL, form, headers)
+    </li>
+  </ol>
+
+  <h2>Common Template Engine Signatures</h2>
+  <p>
+    Different template engines use distinct syntax, which helps identify them:
+  </p>
+
+  <h3>Jinja2 (Python)</h3>
+  <ul>
+    <li><strong>Syntax</strong>: <code>{{ expression }}</code></li>
+    <li>
+      <strong>Test Payload</strong>: <code>{{7*7}}</code> or
+      <code>{{config.items()}}</code>
+    </li>
+    <li>
+      <strong>Expected Output</strong>: <code>49</code> or configuration data
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Jinja2 Detection Example:</h3>
+    <p>Input: <code>https://example.com/display?name={{7*7}}</code></p>
+    <p>Response: <code>49</code></p>
+    <p>Confirms Jinja2 evaluation. Escalate with:</p>
+    <p><code>{{ ''.__class__.__mro__[1].__subclasses__() }}</code></p>
+    <p>If a list of classes appears, it confirms Jinja2 and potential RCE.</p>
+  </div>
+
+  <h3>Twig (PHP)</h3>
+  <ul>
+    <li>
+      <strong>Syntax</strong>: <code>{{ expression }}</code> or
+      <code>{% block %}}</code>
+    </li>
+    <li>
+      <strong>Test Payload</strong>: <code>{{7*7}}</code> or
+      <code>{{_self.env}}</code>
+    </li>
+    <li>
+      <strong>Expected Output</strong>: <code>49</code> or environment details
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Twig Detection Example:</h3>
+    <p>Input: <code>https://example.com/display?name={{7*7}}</code></p>
+    <p>Response: <code>49</code></p>
+    <p>Test further with:</p>
+    <p><code>{{_self.env.registerUndefinedFilterCallback("phpinfo")}}</code></p>
+    <p>
+      If PHP info is displayed, it confirms Twig and potential exploitation.
+    </p>
+  </div>
+
+  <h3>Freemarker (Java)</h3>
+  <ul>
+    <li><strong>Syntax</strong>: <code>${expression}</code></li>
+    <li>
+      <strong>Test Payload</strong>: <code>${7*7}</code> or
+      <code>${.vars}</code>
+    </li>
+    <li>
+      <strong>Expected Output</strong>: <code>49</code> or template variables
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Freemarker Detection Example:</h3>
+    <p>Input: <code>https://example.com/display?name=${7*7}</code></p>
+    <p>Response: <code>49</code></p>
+    <p>Escalate with:</p>
+    <p>
+      <code
+        >${"freemarker.template.util.ObjectConstructor"?new()("java.lang.Runtime")}</code
+      >
+    </p>
+    <p>If system commands execute, it confirms Freemarker and RCE potential.</p>
+  </div>
+
+  <h3>Velocity (Java)</h3>
+  <ul>
+    <li>
+      <strong>Syntax</strong>: <code>$variable</code> or <code>#directive</code>
+    </li>
+    <li>
+      <strong>Test Payload</strong>: <code>$7*7</code> or
+      <code>#set($x=7*7)$x</code>
+    </li>
+    <li><strong>Expected Output</strong>: <code>49</code></li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Velocity Detection Example:</h3>
+    <p>Input: <code>https://example.com/display?name=#set($x=7*7)$x</code></p>
+    <p>Response: <code>49</code></p>
+    <p>Confirms Velocity evaluation.</p>
+  </div>
+
+  <h3>ERB (Ruby)</h3>
+  <ul>
+    <li><strong>Syntax</strong>: <code><%= expression %></code></li>
+    <li><strong>Test Payload</strong>: <code><%= 7*7 %></code></li>
+    <li><strong>Expected Output</strong>: <code>49</code></li>
+  </ul>
+
+  <div class="example-box">
+    <h3>ERB Detection Example:</h3>
+    <p>Input: <code>https://example.com/display?name=<%=7*7%></code></p>
+    <p>Response: <code>49</code></p>
+    <p>Confirms ERB evaluation.</p>
+  </div>
+
+  <h2>Testing Input Vectors</h2>
+  <p>SSTI can occur in various input points, including:</p>
+  <ul>
+    <li><strong>URL parameters</strong>: <code>?name={{7*7}}</code></li>
+    <li><strong>Form fields</strong>: Input fields in forms or search bars</li>
+    <li><strong>HTTP headers</strong>: Custom headers or referer fields</li>
+    <li>
+      <strong>JSON payloads</strong>: API endpoints accepting template data
+    </li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Subtle Responses</h3>
+    <p>
+      SSTI may not always produce obvious outputs like <code>49</code>. Look for
+      indirect indicators, such as error messages, partial rendering, or
+      unexpected behavior, which may suggest template evaluation.
+    </p>
+  </div>
+
+  <h2>Automating SSTI Detection</h2>
+  <p>Manual testing can be supplemented with automation:</p>
+  <ul>
+    <li>
+      <strong>Fuzzing tools</strong> - Use tools like Burp Suite to inject
+      template payloads
+    </li>
+    <li>
+      <strong>Custom scripts</strong> - Automate payload testing across input
+      fields
+    </li>
+    <li>
+      <strong>Specialized tools</strong> - Tools like Tplmap or SSTImap scan for
+      SSTI vulnerabilities
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Burp Suite Fuzzing Example:</h3>
+    <p>Configure Burp Intruder with a payload list:</p>
+    <p>
+      <code>
+        {{7*7}}<br />
+        ${7*7}<br />
+        <%=7*7%><br />
+        #set($x=7*7)$x
+      </code>
+    </p>
+    <p>Analyze responses for signs of evaluation, such as <code>49</code>.</p>
+  </div>
+
+  <h2>Real-World Example</h2>
+  <p>A real-world case of SSTI identification:</p>
+  <ol>
+    <li>A web app allowed users to preview custom templates via a form</li>
+    <li>Testers submitted: <code>{{7*7}}</code> in the template field</li>
+    <li>
+      The response displayed: <code>49</code>, indicating Jinja2 evaluation
+    </li>
+    <li>
+      Further testing with <code>{{config.items()}}</code> exposed sensitive
+      configuration data
+    </li>
+    <li>The vulnerability was reported and patched before exploitation</li>
+  </ol>
+
+  <div class="danger-box">
+    <h3>False Negatives</h3>
+    <p>
+      A lack of response to basic payloads does not rule out SSTI. Template
+      engines may have restricted modes or filters that require advanced
+      payloads or context-specific testing to uncover vulnerabilities.
+    </p>
+  </div>
+
+  <h2>Best Practices for Testers</h2>
+  <p>To effectively identify SSTI:</p>
+  <ol>
+    <li>
+      <strong>Use minimal payloads first</strong> - Start with simple
+      expressions like <code>{{7*7}}</code>
+    </li>
+    <li>
+      <strong>Test multiple engines</strong> - Try syntax for Jinja2, Twig,
+      Freemarker, etc.
+    </li>
+    <li>
+      <strong>Check for sandbox bypasses</strong> - Test payloads that evade
+      restricted modes
+    </li>
+    <li>
+      <strong>Document findings</strong> - Note the input vector, payload, and
+      response for reporting
+    </li>
+    <li>
+      <strong>Escalate responsibly</strong> - Avoid destructive payloads during
+      ethical testing
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Responsible Testing Example:</h3>
+    <p>Instead of:</p>
+    <p>
+      <code
+        >{{
+        ''.__class__.__mro__[1].__subclasses__()[132].__init__.__globals__['system']('rm
+        -rf /') }}</code
+      >
+    </p>
+    <p>Use:</p>
+    <p><code>{{ ''.__class__.__mro__[1].__subclasses__() }}</code></p>
+    <p>
+      This lists available classes without causing harm, confirming the
+      vulnerability.
+    </p>
+  </div>
+</div>

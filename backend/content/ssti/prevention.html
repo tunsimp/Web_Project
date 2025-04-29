@@ -1,0 +1,336 @@
+<div class="lesson-view-content">
+  <h1>Preventing Server-Side Template Injection (SSTI)</h1>
+
+  <div class="definition-box">
+    <h2>What is SSTI Prevention?</h2>
+    <p>
+      Server-Side Template Injection (SSTI) prevention involves implementing
+      security measures to protect web applications from vulnerabilities where
+      user input is unsafely embedded into server-side templates, potentially
+      allowing attackers to execute malicious template code. Effective
+      prevention ensures that user inputs cannot be interpreted as executable
+      code, mitigating risks like remote code execution (RCE), data exposure, or
+      application compromise.
+    </p>
+  </div>
+
+  <h2>Why SSTI Prevention is Critical</h2>
+  <p>Preventing SSTI is essential due to the following risks:</p>
+  <ol>
+    <li>Remote code execution, enabling full server compromise</li>
+    <li>
+      Exposure of sensitive data, such as configuration details or user
+      credentials
+    </li>
+    <li>Bypassing application logic or security controls</li>
+    <li>Denial of service through resource-intensive template operations</li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Vulnerable Code Example:</h3>
+    <p>Consider a Flask application using Jinja2:</p>
+    <p>
+      <code>
+        from flask import Flask, request app = Flask(__name__)
+        @app.route('/display') def display(): name = request.args.get('name')
+        return render_template_string('Hello {{ ' + name + ' }}!')
+      </code>
+    </p>
+    <p>An attacker could input:</p>
+    <p><code>?name={{7*7}}</code></p>
+    <p>Output: <code>Hello 49!</code>, confirming SSTI vulnerability.</p>
+  </div>
+
+  <h2>Key Prevention Techniques</h2>
+  <p>Adopt the following techniques to prevent SSTI vulnerabilities:</p>
+
+  <h3>1. Avoid Direct User Input in Templates</h3>
+  <p>
+    Never pass user input directly into template rendering functions, as this
+    allows code evaluation.
+  </p>
+  <ul>
+    <li>
+      <strong>Use template files</strong> - Define templates in separate files
+      rather than dynamic strings
+    </li>
+    <li>
+      <strong>Pass data safely</strong> - Use template variables instead of
+      concatenating input
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Secure Template Example (Jinja2):</h3>
+    <p>Instead of:</p>
+    <p><code>render_template_string('Hello {{ ' + name + ' }}!')</code></p>
+    <p>Do this:</p>
+    <p><code>render_template('hello.html', name=name)</code></p>
+    <p>With <code>hello.html</code>:</p>
+    <p><code>Hello {{ name }}!</code></p>
+    <p>This ensures <code>name</code> is treated as data, not code.</p>
+  </div>
+
+  <h3>2. Sanitize and Escape User Inputs</h3>
+  <p>
+    Validate and escape user inputs to prevent them from being interpreted as
+    template code.
+  </p>
+  <ul>
+    <li>
+      <strong>Input validation</strong> - Restrict inputs to expected formats
+      (e.g., alphanumeric)
+    </li>
+    <li>
+      <strong>Escape outputs</strong> - Apply template engine escaping to render
+      inputs as plain text
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Input Validation Example (Python):</h3>
+    <p>
+      <code>
+        import re name = request.args.get('name') if not
+        re.match("^[a-zA-Z0-9]+$", name): return "Invalid input", 400 return
+        render_template('hello.html', name=name)
+      </code>
+    </p>
+    <p>
+      This rejects inputs containing template syntax like <code>{{}}</code>.
+    </p>
+  </div>
+
+  <h3>3. Use Safe Template Engine Configurations</h3>
+  <p>
+    Configure template engines to restrict dangerous features and limit code
+    execution.
+  </p>
+  <ul>
+    <li>
+      <strong>Enable sandboxing</strong> - Restrict access to sensitive objects
+      or functions
+    </li>
+    <li>
+      <strong>Disable auto-evaluation</strong> - Prevent automatic code
+      execution in templates
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Jinja2 Sandbox Example:</h3>
+    <p>
+      <code>
+        from jinja2 import Environment, SandboxedEnvironment env =
+        SandboxedEnvironment() template = env.from_string("Hello {{ name }}!")
+        output = template.render(name=request.args.get('name'))
+      </code>
+    </p>
+    <p>
+      The sandbox prevents access to dangerous Python objects like
+      <code>__subclasses__</code>.
+    </p>
+  </div>
+
+  <h3>4. Use Less Powerful Template Engines</h3>
+  <p>
+    Opt for template engines with limited functionality to reduce the attack
+    surface.
+  </p>
+  <ul>
+    <li>
+      <strong>Restricted engines</strong> - Use engines like Mustache or
+      Handlebars, which lack code execution capabilities
+    </li>
+    <li>
+      <strong>Avoid Turing-complete engines</strong> - Minimize use of engines
+      that allow complex logic
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Mustache Example (JavaScript):</h3>
+    <p>
+      <code>
+        const Mustache = require('mustache'); const template = 'Hello {{ name
+        }}!'; const output = Mustache.render(template, { name: req.query.name
+        });
+      </code>
+    </p>
+    <p>Mustache treats all inputs as data, preventing code execution.</p>
+  </div>
+
+  <h3>5. Implement Context-Aware Escaping</h3>
+  <p>
+    Apply escaping based on where the input is rendered (e.g., HTML, JavaScript,
+    or template).
+  </p>
+  <ul>
+    <li>
+      <strong>Template escaping</strong> - Use engine-specific filters like
+      <code>|escape</code> in Jinja2
+    </li>
+    <li>
+      <strong>Context-specific filters</strong> - Apply appropriate escaping for
+      HTML, URLs, or JSON
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Jinja2 Escaping Example:</h3>
+    <p>Template:</p>
+    <p><code>Hello {{ name | escape }}!</code></p>
+    <p>Input: <code>?name={{7*7}}</code></p>
+    <p>Output: <code>Hello {{7*7}}!</code></p>
+    <p>
+      The <code>escape</code> filter renders the input as literal text,
+      preventing evaluation.
+    </p>
+  </div>
+
+  <h3>6. Restrict Template Engine Permissions</h3>
+  <p>Limit the template engine’s access to the server environment.</p>
+  <ul>
+    <li>
+      <strong>Isolate execution</strong> - Run templates in a restricted
+      environment or container
+    </li>
+    <li>
+      <strong>Limit filesystem access</strong> - Prevent templates from reading
+      sensitive files
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>Freemarker Restricted Configuration:</h3>
+    <p>
+      <code>
+        Configuration cfg = new Configuration(); cfg.setTemplateLoader(new
+        StringTemplateLoader()); // Prevent file access cfg.setObjectWrapper(new
+        DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build());
+      </code>
+    </p>
+    <p>
+      This restricts Freemarker from accessing the filesystem or dangerous Java
+      classes.
+    </p>
+  </div>
+
+  <h3>7. Deploy Web Application Firewalls (WAFs)</h3>
+  <p>WAFs can detect and block SSTI payloads by filtering suspicious inputs.</p>
+  <ul>
+    <li>
+      <strong>Pattern matching</strong> - Block template syntax like
+      <code>{{}}</code> or <code>${}</code>
+    </li>
+    <li>
+      <strong>Anomaly detection</strong> - Identify unusual request patterns
+    </li>
+  </ul>
+
+  <div class="example-box">
+    <h3>WAF Rule Example:</h3>
+    <p>Block requests containing:</p>
+    <p><code>{{.*}}|${.*}|<%.*%>|#set.*</code></p>
+    <p>This stops common SSTI payloads before they reach the application.</p>
+  </div>
+
+  <h3>8. Regularly Test and Audit Applications</h3>
+  <p>Conduct security testing to identify and fix SSTI vulnerabilities.</p>
+  <ul>
+    <li>
+      <strong>Penetration testing</strong> - Test inputs with SSTI payloads
+    </li>
+    <li><strong>Code reviews</strong> - Check for unsafe template usage</li>
+    <li>
+      <strong>Automated scanners</strong> - Use tools like Tplmap to detect
+      vulnerabilities
+    </li>
+  </ul>
+
+  <div class="danger-box">
+    <h3>Defense in Depth</h3>
+    <p>
+      Relying on a single prevention technique is insufficient. Combine input
+      validation, safe template configurations, escaping, and WAFs to create a
+      robust defense against SSTI attacks.
+    </p>
+  </div>
+
+  <h2>Step-by-Step Prevention Strategy</h2>
+  <p>Follow these steps to secure an application against SSTI:</p>
+  <ol>
+    <li>
+      <strong>Audit template usage</strong> - Identify where user input
+      interacts with templates
+    </li>
+    <li>
+      <strong>Refactor unsafe code</strong> - Replace dynamic template strings
+      with safe rendering
+    </li>
+    <li>
+      <strong>Implement input validation</strong> - Restrict inputs to safe
+      formats
+    </li>
+    <li>
+      <strong>Enable sandboxing</strong> - Configure template engines for
+      restricted execution
+    </li>
+    <li>
+      <strong>Apply escaping</strong> - Use context-aware escaping for all
+      outputs
+    </li>
+    <li>
+      <strong>Deploy a WAF</strong> - Add real-time protection against malicious
+      payloads
+    </li>
+    <li>
+      <strong>Test regularly</strong> - Perform security audits and penetration
+      testing
+    </li>
+  </ol>
+
+  <div class="example-box">
+    <h3>Comprehensive Prevention Example (Flask/Jinja2):</h3>
+    <p>
+      <code>
+        from flask import Flask, request, render_template import re app =
+        Flask(__name__) @app.route('/display') def display(): name =
+        request.args.get('name') # Validate input if not name or not
+        re.match("^[a-zA-Z0-9]+$", name): return "Invalid input", 400 # Render
+        safe template with escaping return render_template('hello.html',
+        name=name)
+      </code>
+    </p>
+    <p><code>hello.html</code>:</p>
+    <p><code>Hello {{ name | escape }}!</code></p>
+    <p>
+      This combines validation, safe rendering, and escaping to prevent SSTI.
+    </p>
+  </div>
+
+  <h2>Real-World Example</h2>
+  <p>A real-world case of SSTI prevention:</p>
+  <ol>
+    <li>A web application used Twig to render user profiles</li>
+    <li>
+      Penetration testing revealed SSTI with:
+      <code>{{_self.env.registerUndefinedFilterCallback("phpinfo")}}</code>
+    </li>
+    <li>
+      Developers refactored to use safe template files and input validation
+    </li>
+    <li>Twig’s sandbox mode was enabled to restrict function access</li>
+    <li>A WAF was configured to block template syntax</li>
+    <li>Subsequent tests confirmed the vulnerability was eliminated</li>
+  </ol>
+
+  <div class="danger-box">
+    <h3>Continuous Monitoring</h3>
+    <p>
+      SSTI prevention requires ongoing vigilance. Regularly update template
+      engines, monitor application logs, and perform security audits to address
+      new vulnerabilities and attack techniques.
+    </p>
+  </div>
+</div>

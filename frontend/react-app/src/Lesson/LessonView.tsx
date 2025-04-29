@@ -9,7 +9,7 @@ interface LessonPageData {
   lesson_id: number;
   page_number: number;
   content_path: string;
-  content?: string; // Optional, if backend resolves content
+  content?: string; 
 }
 
 interface LessonData {
