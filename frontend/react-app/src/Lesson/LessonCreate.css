@@ -138,6 +138,36 @@ textarea {
   cursor: pointer;
 }
 
+/* File information display */
+.file-info {
+  background-color: #2d2d52;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+.file-info p {
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  font-size: 14px;
+}
+
+.view-html-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-right: 10px;
+}
+
+.view-html-btn:hover {
+  background-color: #2980b9;
+}
+
 /* Hover effects */
 .add-page-btn:hover {
   background-color: #45a049;

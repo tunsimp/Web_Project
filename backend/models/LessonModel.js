@@ -1,5 +1,8 @@
 // models/Lesson.js
 const pool = require("../config/db");
+const fs = require("fs").promises;
+const path = require("path");
+
 class LessonModel {
   // Get all lessons
   static async getAll() {
@@ -47,11 +50,22 @@ class LessonModel {
   // Create a new lesson
   static async create(title, description) {
     try {
+      const directoryPath = path.join(process.cwd(), "content", title);
+      console.log("Directory Path:", directoryPath);
+      // Check if directory exists using async method
+      try {
+        await fs.access(directoryPath);
+        // Directory exists
+      } catch {
+        // Directory doesn't exist, create it
+        await fs.mkdir(directoryPath, { recursive: true });
+      }
+
       const [result] = await pool.query(
         "INSERT INTO Lessons (title, description) VALUES (?, ?)",
         [title, description]
       );
-      return result.insertId;
+      return { LessonID: result.insertId, path: directoryPath };
     } catch (error) {
       throw error;
     }

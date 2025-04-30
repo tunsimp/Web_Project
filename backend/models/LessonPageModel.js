@@ -30,20 +30,48 @@ class LessonPageModel {
   }
 
   // Create a new page
-  static async create(lessonId, pageNumber, content) {
+  static async create(lessonId, pages, path) {
     try {
-      // If the page number already exists, shift all higher page numbers up by 1
-      await pool.query(
-        "UPDATE LessonPages SET page_number = page_number + 1 WHERE lesson_id = ? AND page_number >= ?",
-        [lessonId, pageNumber]
-      );
+      // Validate inputs
+      if (!path) {
+        throw new Error("Base path is required");
+      }
+      if (!pages || !Array.isArray(pages)) {
+        throw new Error("Pages must be a non-empty array");
+      }
 
-      const [result] = await pool.query(
-        "INSERT INTO LessonPages (lesson_id, page_number, content) VALUES (?, ?, ?)",
-        [lessonId, pageNumber, content]
-      );
-      return result.insertId;
+      const insertIds = [];
+      for (const page of pages) {
+        // Validate page properties
+        if (
+          !page.page_number ||
+          !page.content_path ||
+          !page.filename ||
+          !page.content
+        ) {
+          throw new Error(
+            `Invalid page data: page_number, content_path, filename, and content are required for page ${page.page_number}`
+          );
+        }
+
+        // Ensure the directory exists
+        await fs.mkdir(path, { recursive: true });
+
+        const [result] = await pool.query(
+          "INSERT INTO LessonPages (lesson_id, page_number, content_path) VALUES (?, ?, ?)",
+          [lessonId, page.page_number, page.content_path]
+        );
+        insertIds.push(result.insertId);
+
+        // Write the content to the file
+        const filePath = `${path}/${page.filename}`;
+        await fs.writeFile(filePath, page.content, "utf8");
+        console.log(`Wrote file: ${filePath}`);
+      }
+      console.log("Base path:", path);
+      return insertIds;
     } catch (error) {
+      console.error("Error in LessonPage.create:", error);
       throw error;
     }
   }

@@ -21,6 +21,7 @@ router.get("/:lessonId/pages", lessonController.getAllLessonPages);
 router.post("/:lessonId/pages", lessonController.createLessonPage);
 router.put("/pages/:pageId", lessonController.updateLessonPage);
 router.delete("/pages/:pageId", lessonController.deleteLessonPage);
+router.post("/create", lessonController.createLesson);
 
 // // User progress routes
 router.post("/progress/:lessonId", lessonController.updateUserProgress);

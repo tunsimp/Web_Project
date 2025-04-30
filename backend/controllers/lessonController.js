@@ -308,3 +308,76 @@ exports.getUserLessonsWithProgress = async (req, res) => {
     });
   }
 };
+
+exports.createLesson = async (req, res) => {
+  const { title, description, pages } = req.body;
+
+  // Basic validation
+  if (
+    !title ||
+    !description ||
+    !pages ||
+    !Array.isArray(pages) ||
+    pages.length === 0
+  ) {
+    return res.status(400).json({
+      message:
+        "Missing required fields: title, description, and at least one page are required",
+    });
+  }
+
+  // Check that each page has page_number, content, and filename
+  for (const page of pages) {
+    if (!page.page_number || !page.content) {
+      return res.status(400).json({
+        message: "Each page must have a page_number and content",
+      });
+    }
+    // Assign default filename if missing
+    if (!page.filename) {
+      console.warn(`Page ${page.page_number} missing filename, using default`);
+      page.filename = `page${page.page_number}.html`;
+    }
+  }
+
+  try {
+    // Create lesson data
+    const lessonData = { title, description, pages };
+
+    // Create the lesson and get the ID and path
+    const { LessonID, path } = await Lesson.create(
+      lessonData.title,
+      lessonData.description
+    );
+
+    // Create lesson pages
+    const lessonPagesID = await LessonPage.create(
+      LessonID,
+      lessonData.pages.map((page) => ({
+        page_number: page.page_number,
+        content: page.content,
+        filename: page.filename, // Include filename
+        content_path: `content/${title}/${page.filename}`, // Consistent path
+      })),
+      path // Pass the base path
+    );
+
+    // Send success response
+    res.status(201).json({
+      message: "Lesson created successfully",
+      data: {
+        LessonId: LessonID,
+        title: lessonData.title,
+        description: lessonData.description,
+        pageCount: lessonData.pages.length,
+        lessonPagesID: lessonPagesID,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating lesson:", error);
+    res.status(500).json({
+      message: "An error occurred while creating the lesson",
+      error: error.message,
+    });
+  }
+};
