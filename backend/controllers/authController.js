@@ -41,7 +41,6 @@ exports.login = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Login successful",
       isAdmin: role === "admin",
       token: token,
     });
@@ -109,4 +108,15 @@ exports.checkAuth = async (req, res) => {
   } catch (error) {
     return res.status(401).json({ message: "Invalid token" });
   }
+};
+
+exports.getAuthStatus = (req, res) => {
+  // If we reached here, it means checkAuth middleware allowed the request to pass
+  res.status(200).json({
+    message: "authenticated",
+    user: {
+      username: req.username,
+      role: req.userRole,
+    },
+  });
 };

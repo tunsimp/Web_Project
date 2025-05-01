@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const lessonController = require("../controllers/lessonController");
 
-router.get("/content/:path(.+)", lessonController.getLessonPageContent); // Add leading /
+router.get("/content/:path(.+)", lessonController.getLessonPageContent); // Add leading
 
 // Lesson routes
 router.get("/", lessonController.getAllLessons);
@@ -20,7 +20,7 @@ router.get("/:lessonId/pages/:pageNumber", lessonController.getLessonPage);
 router.get("/:lessonId/pages", lessonController.getAllLessonPages);
 router.post("/:lessonId/pages", lessonController.createLessonPage);
 router.put("/pages/:pageId", lessonController.updateLessonPage);
-router.delete("/pages/:pageId", lessonController.deleteLessonPage);
+router.delete("/:lessonId/:pageNumber", lessonController.deleteLessonPage);
 router.post("/create", lessonController.createLesson);
 
 // // User progress routes

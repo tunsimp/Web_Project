@@ -2,6 +2,7 @@
 const pool = require("../config/db");
 const fs = require("fs").promises;
 const path = require("path");
+const LessonPageModel = require("./LessonPageModel");
 
 class LessonModel {
   // Get all lessons
@@ -56,6 +57,11 @@ class LessonModel {
       try {
         await fs.access(directoryPath);
         // Directory exists
+        return {
+          LessonID: null,
+          path: null,
+          message: "Directory already exists",
+        };
       } catch {
         // Directory doesn't exist, create it
         await fs.mkdir(directoryPath, { recursive: true });
@@ -65,7 +71,11 @@ class LessonModel {
         "INSERT INTO Lessons (title, description) VALUES (?, ?)",
         [title, description]
       );
-      return { LessonID: result.insertId, path: directoryPath };
+      return {
+        LessonID: result.insertId,
+        path: directoryPath,
+        message: "Lesson created successfully",
+      };
     } catch (error) {
       throw error;
     }
@@ -87,6 +97,22 @@ class LessonModel {
   // Delete a lesson and its pages
   static async delete(lessonId) {
     try {
+      const title = await pool.query(
+        "SELECT title FROM Lessons WHERE lesson_id = ?",
+        [lessonId]
+      );
+
+      const deletePath = path.join(process.cwd(), "content", title[0][0].title);
+      const lessonPages = await LessonPageModel.getAllByLessonId(lessonId);
+      for (const page of lessonPages) {
+        const result = await LessonPageModel.delete(page.lessonpage_id);
+        if (!result) {
+          console.error("Error deleting lesson page:", result);
+          return result;
+        }
+        console.log("Deleted lesson page:", page.lessonpage_id);
+      }
+
       // First delete related records from LessonPages
       await pool.query("DELETE FROM LessonPages WHERE lesson_id = ?", [
         lessonId,
@@ -102,6 +128,9 @@ class LessonModel {
         "DELETE FROM Lessons WHERE lesson_id = ?",
         [lessonId]
       );
+
+      await fs.rm(deletePath, { recursive: true, force: true });
+      console.log("Successfully deleted:", deletePath);
       return result.affectedRows > 0;
     } catch (error) {
       throw error;

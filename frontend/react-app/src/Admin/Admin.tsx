@@ -38,6 +38,17 @@ const Admin = () => {
     const handleEdit = (id: number) => {
         navigate(`/admin/lesson/${id}`);
     };
+    const handleDelete = async (id: number) => {
+        if (window.confirm('Are you sure you want to delete this lesson?')) { 
+          try {
+            await axios.delete(`http://localhost:5000/api/lessons/${id}`, { withCredentials: true });
+            setLessons(lessons.filter(lesson => lesson.id !== id));
+          } catch (err) {
+            setError('Failed to delete lesson. Please try again later.');
+            console.error("Error deleting lesson:", err);
+          }
+        }
+      }
 
     return (
         <>
@@ -71,7 +82,7 @@ const Admin = () => {
                                     <td>{lesson.description}</td>
                                     <td>
                                         <button onClick={() => handleEdit(lesson.id)}>Edit</button>
-                                        <button>Delete</button>
+                                        <button onClick={() => handleDelete(lesson.id)}>Delete</button>
                                     </td>
                                 </tr>
                             ))}

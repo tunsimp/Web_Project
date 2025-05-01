@@ -3,7 +3,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const indexRoutes = require("./routes/indexRoutes");
-const lessonRoutes = require("./routes/lessonRoutes"); // Add this line
+const lessonRoutes = require("./routes/lessonRoutes");
 const checkAuth = require("./middleware/checkAuth");
 const app = express();
 
@@ -21,12 +21,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Use routes
+// Auth routes (no authentication required)
 app.use("/api/auth", authRoutes);
-// Apply checkAuth middleware to all routes
-app.use(checkAuth);
-app.use("/api/route", indexRoutes);
-app.use("/api/lessons", lessonRoutes); // Add this line
+
+// Protected routes (authentication required)
+app.use("/api/route", checkAuth, indexRoutes);
+app.use("/api/lessons", checkAuth, lessonRoutes);
 
 // Handle 404 if route is not defined
 app.use((req, res) => {

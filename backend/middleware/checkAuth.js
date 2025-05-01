@@ -11,6 +11,7 @@ const checkAuth = (req, res, next) => {
     req.user_name = decoded.username;
     req.user_id = decoded.uid;
     req.containerId = decoded.containerId;
+    req.userRole = decoded.role; // Assuming you have a role in the token
     next();
   } catch (err) {
     console.error("Token verification failed:", err);

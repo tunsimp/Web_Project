@@ -92,24 +92,35 @@ class LessonPageModel {
   // Delete a page
   static async delete(lessonpageId) {
     try {
-      // Get lesson_id and page_number before deleting
-      const [pageInfo] = await pool.query(
-        "SELECT lesson_id, page_number FROM LessonPages WHERE lessonpage_id = ?",
+      // First, get the lesson_id and page_number for the page we're deleting
+      const [pageData] = await pool.query(
+        "SELECT * FROM LessonPages WHERE lessonpage_id = ?",
         [lessonpageId]
       );
 
-      if (pageInfo.length === 0) {
-        return false;
+      // Check if the page exists
+      if (!pageData || pageData.length === 0) {
+        throw new Error("Lesson page not found");
       }
 
-      const { lesson_id, page_number } = pageInfo[0];
+      const { lesson_id, page_number, content_path } = pageData[0];
+      const deletePath = path.join(process.cwd(), content_path);
+      console.log("Deleting page:", lessonpageId, deletePath);
+      fs.unlink(deletePath, (err) => {
+        if (err) {
+          console.error("Error deleting file:", err);
+          return err;
+        } else {
+          console.log("File deleted successfully:", content_path);
+        }
+      });
 
       // Delete the page
       await pool.query("DELETE FROM LessonPages WHERE lessonpage_id = ?", [
         lessonpageId,
       ]);
 
-      // Reorder remaining pages
+      // Reorder remaining pages - now using the retrieved values
       await pool.query(
         "UPDATE LessonPages SET page_number = page_number - 1 WHERE lesson_id = ? AND page_number > ?",
         [lesson_id, page_number]
@@ -117,6 +128,7 @@ class LessonPageModel {
 
       return true;
     } catch (error) {
+      console.error("Error in LessonPage.delete:", error);
       throw error;
     }
   }

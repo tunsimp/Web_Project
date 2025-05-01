@@ -84,9 +84,9 @@ exports.updateLesson = async (req, res) => {
 exports.deleteLesson = async (req, res) => {
   try {
     const lessonId = req.params.id;
-    const success = await Lesson.delete(lessonId);
+    const result = await Lesson.delete(lessonId);
 
-    if (!success) {
+    if (!result) {
       return res.status(404).json({ message: "Lesson not found" });
     }
 
@@ -205,8 +205,8 @@ exports.updateLessonPage = async (req, res) => {
 
 exports.deleteLessonPage = async (req, res) => {
   try {
-    const { pageId } = req.params;
-    const success = await LessonPage.delete(pageId);
+    const { LessonId, pageNumber } = req.params;
+    const success = await LessonPage.delete(LessonId, pageNumber);
 
     if (!success) {
       return res.status(404).json({ message: "Page not found" });
@@ -345,11 +345,16 @@ exports.createLesson = async (req, res) => {
     const lessonData = { title, description, pages };
 
     // Create the lesson and get the ID and path
-    const { LessonID, path } = await Lesson.create(
+    const { LessonID, path, message } = await Lesson.create(
       lessonData.title,
       lessonData.description
     );
-
+    if (message === "Directory already exists") {
+      return res.status(400).json({
+        message: "Lesson with this title already exists",
+      });
+    }
+    console.log(message, "ID:", LessonID, "at path:", path);
     // Create lesson pages
     const lessonPagesID = await LessonPage.create(
       LessonID,
