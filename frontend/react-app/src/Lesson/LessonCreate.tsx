@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import './LessonCreate.css'; // Assume a CSS file for styling
-import Navbar from '../NavBar/NavBar'; // Assume a Navbar component exists
+import './LessonCreate.css';
+import Navbar from '../NavBar/NavBar';
 import axios from 'axios';
 
 const LessonCreate = () => {
@@ -118,75 +118,102 @@ const LessonCreate = () => {
     <>
       <Navbar />
       <div className="lesson-create-container">
-        <h1>Create New Lesson</h1>
-        {responseMessage.message && (
-          <div className={`response-message ${responseMessage.type}`}>
-            {responseMessage.message}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="lesson-form">
-          <h2>Lesson Details</h2>
-          <div className="form-group">
-            <label htmlFor="title">Lesson Title:</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={lesson.title}
-              onChange={handleLessonChange}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="description">Lesson Description:</label>
-            <textarea
-              id="description"
-              name="description"
-              value={lesson.description}
-              onChange={handleLessonChange}
-              rows="4"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <h2>Lesson Pages</h2>
-          {lessonPages.map((page, index) => (
-            <div key={index} className="lesson-page-card">
-              <h3>Page {page.page_number}</h3>
+        <div className="lesson-create-content">
+          <h1 className="lesson-create-title">Create New Lesson</h1>
+          
+          {responseMessage.message && (
+            <div className={`response-message ${responseMessage.type}`}>
+              {responseMessage.message}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="lesson-form">
+            <div className="section-container">
+              <h2 className="section-title">Lesson Details</h2>
               <div className="form-group">
-                <label htmlFor={`file-${index}`}>Page File (HTML):</label>
+                <label htmlFor="title">Lesson Title:</label>
                 <input
-                  type="file"
-                  id={`file-${index}`}
-                  name="file"
-                  accept=".html"
-                  onChange={(e) => handlePageChange(index, e)}
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={lesson.title}
+                  onChange={handleLessonChange}
                   required
                   disabled={isLoading}
+                  className="lesson-input"
                 />
-                {selectedFiles[index] && (
-                  <div className="file-info">
-                    Selected: {selectedFiles[index].name}
-                  </div>
-                )}
               </div>
-              {lessonPages.length > 1 && (
-                <button type="button" onClick={() => removePage(index)} disabled={isLoading}>
-                  Remove Page
-                </button>
-              )}
+              <div className="form-group">
+                <label htmlFor="description">Lesson Description:</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={lesson.description}
+                  onChange={handleLessonChange}
+                  rows="4"
+                  required
+                  disabled={isLoading}
+                  className="lesson-textarea"
+                />
+              </div>
             </div>
-          ))}
-          <button type="button" onClick={addPage} disabled={isLoading}>
-            Add Page
-          </button>
-          <div className="form-submit">
-            <button type="submit" disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create Lesson'}
-            </button>
-          </div>
-        </form>
+
+            <div className="section-container">
+              <h2 className="section-title">Lesson Pages</h2>
+              {lessonPages.map((page, index) => (
+                <div key={index} className="lesson-page-card">
+                  <h3 className="page-title">Page {page.page_number}</h3>
+                  <div className="form-group">
+                    <label htmlFor={`file-${index}`}>Page File (HTML):</label>
+                    <input
+                      type="file"
+                      id={`file-${index}`}
+                      name="file"
+                      accept=".html"
+                      onChange={(e) => handlePageChange(index, e)}
+                      required
+                      disabled={isLoading}
+                      className="file-input"
+                    />
+                  </div>
+                  {selectedFiles[index] && (
+                    <div className="file-info">
+                      Selected: {selectedFiles[index].name}
+                    </div>
+                  )}
+                  {lessonPages.length > 1 && (
+                    <button 
+                      type="button" 
+                      onClick={() => removePage(index)} 
+                      disabled={isLoading}
+                      className="remove-button"
+                    >
+                      Remove Page
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button 
+                type="button" 
+                onClick={addPage} 
+                disabled={isLoading}
+                className="add-button"
+              >
+                Add Page
+              </button>
+            </div>
+
+            <div className="form-actions">
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="submit-button"
+              >
+                {isLoading ? 'Creating...' : 'Create'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </>
   );

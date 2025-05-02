@@ -174,7 +174,7 @@ const LessonEditor = () => {
         } else {
           // Update existing page with file content
           await axios.put(`http://localhost:5000/api/lessons/pages/${page.lessonpage_id}`, {
-            content_path: fileName,  // Send file name as content_path
+            content_path: fileName,  // Send file name as content_path 
             content: fileContent     // Send the file content
           }, { withCredentials: true });
           
@@ -270,114 +270,128 @@ const LessonEditor = () => {
     }
   };
 
-  if (loading) return <div className="loading-container">Loading lesson data...</div>;
-  if (!lesson) return <div className="error-container">No lesson found</div>;
+  if (loading) return <div className="page-container"><div className="loading-container">Loading lesson data...</div></div>;
+  if (!lesson) return <div className="page-container"><div className="error-container">No lesson found</div></div>;
 
   return (
     <>
-      <Navbar />
-      <div className="lesson-editor">
-        <h1>Edit Lesson</h1>
-        
-        {message && (
-          <div className={`message ${message.type}`}>
-            {message.text}
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="lesson-meta-data">
-            <label htmlFor="title">Title</label>
-            <input 
-              type="text" 
-              id="title" 
-              value={lesson.title} 
-              onChange={handleInputChange}
-              required
-            />
-            <label htmlFor="description">Description</label>
-            <textarea 
-              id="description" 
-              value={lesson.description} 
-              onChange={handleInputChange}
-              required
-            ></textarea>
-          </div>
+    <Navbar />
+    <div className="page-wrapper">
+      <div className="page-container">
+        <div className="lesson-editor">
+          <h1>Edit Lesson</h1>
           
-          <button 
-            type="submit" 
-            disabled={saving}
-            className="save-button"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </form>
-        
-        <div className="pages-section">
-          <h2>Lesson Pages</h2>
-          <button 
-            onClick={addNewPage}
-            className="add-page-button"
-          >
-            Add New Page
-          </button>
-          
-          {lesson.pages && lesson.pages.length > 0 ? (
-            <div className="pages-list">
-              {lesson.pages
-                .sort((a, b) => a.page_number - b.page_number)
-                .map(page => (
-                <div key={page.lessonpage_id} className="page-item">
-                  <div className="page-header">
-                    <h3>Page {page.page_number}</h3>
-                    <div className="page-actions">
-                      <button 
-                        onClick={() => savePage(page)}
-                        className="save-page-button"
-                      >
-                        Save Page
-                      </button>
-                      <button 
-                        onClick={() => deletePage(page.lessonpage_id)}
-                        className="delete-page-button"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Current Content Path</label>
-                    <p className="current-path">{page.content_path || 'No file uploaded yet'}</p>
-                    
-                    <label htmlFor={`page-${page.lessonpage_id}`}>Upload HTML Content</label>
-                    <div className="file-upload-container">
-                      <input 
-                        type="file"
-                        id={`page-${page.lessonpage_id}`}
-                        accept='.html'
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            handleFileUpload(page.lessonpage_id, e.target.files[0]);
-                          }
-                        }}
-                      />
-                      {page.fileToUpload && (
-                        <span className="file-selected">File selected: {page.fileToUpload.name}</span>
-                      )}
-                      {uploadingPageId === page.lessonpage_id && (
-                        <span className="uploading-indicator">Uploading...</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {message && (
+            <div className={`message ${message.type}`} style={{ maxWidth: "900px", width: "100%" }}>
+              {message.text}
             </div>
-          ) : (
-            <div className="no-pages">No pages found for this lesson. Add one to get started.</div>
           )}
+          
+          <div className="lesson-content-wrapper">
+            <form onSubmit={handleSubmit}>
+              <div className="lesson-meta-data">
+              <h2>Lesson Informations</h2>
+                <div className="form-group">
+                  <label htmlFor="title">Title</label>
+                  <input 
+                    type="text" 
+                    id="title" 
+                    value={lesson.title} 
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="description">Description</label>
+                  <textarea 
+                    id="description" 
+                    value={lesson.description} 
+                    onChange={handleInputChange}
+                    required
+                  ></textarea>
+                </div>
+              </div>
+              
+              <div className="button-container">
+                <button 
+                  type="submit" 
+                  disabled={saving}
+                  className="save-button"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+            
+            <div className="pages-section">
+              <h2>Lesson Pages</h2>
+              <button 
+                onClick={addNewPage}
+                className="add-page-button"
+              >
+                Add New Page
+              </button>
+              
+              {lesson.pages && lesson.pages.length > 0 ? (
+                <div className="pages-list">
+                  {lesson.pages
+                    .sort((a, b) => a.page_number - b.page_number)
+                    .map(page => (
+                    <div key={page.lessonpage_id} className="page-item">
+                      <div className="page-header">
+                        <h3>Page {page.page_number}</h3>
+                        <div className="page-actions">
+                          <button 
+                            onClick={() => savePage(page)}
+                            className="save-page-button"
+                          >
+                            Save Page
+                          </button>
+                          <button 
+                            onClick={() => deletePage(page.lessonpage_id)}
+                            className="delete-page-button"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="form-group">
+                        <label>Current Content Path</label>
+                        <p className="current-path">{page.content_path || 'No file uploaded yet'}</p>
+                        
+                        <label htmlFor={`page-${page.lessonpage_id}`}>Upload HTML Content</label>
+                        <div className="file-upload-container">
+                          <input 
+                            type="file"
+                            id={`page-${page.lessonpage_id}`}
+                            accept='.html'
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleFileUpload(page.lessonpage_id, e.target.files[0]);
+                              }
+                            }}
+                          />
+                          {page.fileToUpload && (
+                            <span className="file-selected">File selected: {page.fileToUpload.name}</span>
+                          )}
+                          {uploadingPageId === page.lessonpage_id && (
+                            <span className="uploading-indicator">Uploading...</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-pages">No pages found for this lesson. Add one to get started.</div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+    </div>
     </>
   );
 };

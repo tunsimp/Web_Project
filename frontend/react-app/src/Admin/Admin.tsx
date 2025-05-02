@@ -38,6 +38,7 @@ const Admin = () => {
     const handleEdit = (id: number) => {
         navigate(`/admin/lesson/${id}`);
     };
+
     const handleDelete = async (id: number) => {
         if (window.confirm('Are you sure you want to delete this lesson?')) { 
           try {
@@ -48,13 +49,23 @@ const Admin = () => {
             console.error("Error deleting lesson:", err);
           }
         }
-      }
+    };
+
+    const handleAddNew = () => {
+        navigate('/admin/lesson/new');
+    };
 
     return (
         <>
             <Navbar />    
             <div className="admin-container">
                 <h1 className="admin-title">Admin Panel - Lesson Management</h1>
+                
+                <div className="admin-actions">
+                    <button className="add-button" onClick={handleAddNew}>
+                        Add New Lesson
+                    </button>
+                </div>
                 
                 {loading && (
                     <div className="loading">Loading lessons...</div>

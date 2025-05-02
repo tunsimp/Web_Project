@@ -1,10 +1,357 @@
-.lesson-editor {
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
+/* Page layout & container styles */
+.page-wrapper {
+  min-height: 100vh;
+  background-color: #0a0a1a;
+  color: #ffffff;
 }
-.lesson-meta-data {
+
+.page-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.lesson-editor {
+  width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  background-color: #1e1e3f;
+  border-radius: 20px;
+}
+
+.lesson-editor h1 {
+  margin-top: 0;
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.lesson-editor h2 {
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+/* Lesson content wrapper - New element to wrap title, metadata and pages */
+.lesson-content-wrapper {
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
   margin-bottom: 20px;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent content overflow */
+}
+
+/* Form elements and metadata */
+.lesson-meta-data {
+  background-color: #24243c;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.required {
+  color: #ff6b6b;
+}
+
+.form-group input,
+.form-group textarea {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #434459;
+  border-radius: 6px;
+  background-color: #434459;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+/* Buttons */
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+.save-button {
+  padding: 12px 24px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #24243c;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.save-button:hover {
+  background-color: #f0f0f0;
+}
+
+.save-button:active {
+  transform: translateY(1px);
+}
+
+.save-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.add-page-button {
+  padding: 10px 20px;
+  background-color: #4ade80;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #24243c;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  margin-bottom: 20px;
+}
+
+.add-page-button:hover {
+  background-color: #3ac26e;
+}
+
+.add-page-button:active {
+  transform: translateY(1px);
+}
+
+/* Pages section */
+.pages-section {
+  background-color: #24243c;
+  padding: 25px;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.page-item {
+  background-color: #2d2d52;
+  padding: 20px;
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.page-header h3 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.page-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.save-page-button {
+  padding: 8px 16px;
+  background-color: #4ade80;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #24243c;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-page-button:hover {
+  background-color: #3ac26e;
+}
+
+.delete-page-button {
+  padding: 8px 16px;
+  background-color: #ff6b6b;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.delete-page-button:hover {
+  background-color: #ff5252;
+}
+
+/* Current path and file upload */
+.current-path {
+  padding: 10px;
+  background-color: #373752;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 14px;
+  margin-bottom: 15px;
+  word-break: break-all; /* Prevent text overflow */
+}
+
+.file-upload-container {
+  background-color: #333355;
+  padding: 15px;
+  border-radius: 6px;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.file-upload-container input[type="file"] {
+  color: #ffffff;
+  max-width: 100%;
+}
+
+.file-selected {
+  display: block;
+  margin-top: 10px;
+  color: #4ade80;
+  font-size: 14px;
+  word-break: break-all; /* Prevent long filenames from overflowing */
+}
+
+.uploading-indicator {
+  display: block;
+  margin-top: 10px;
+  color: #ffbe0b;
+  font-size: 14px;
+}
+
+/* Messages */
+.message {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.message.success {
+  background-color: rgba(74, 222, 128, 0.2);
+  border: 1px solid #4ade80;
+  color: #4ade80;
+}
+
+.message.error {
+  background-color: rgba(255, 102, 102, 0.2);
+  border: 1px solid #ff6666;
+  color: #ff6b6b;
+}
+
+/* Loading and error states */
+.loading-container,
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  color: #ffffff;
+  font-size: 18px;
+  width: 100%;
+}
+
+.no-pages {
+  padding: 30px;
+  text-align: center;
+  color: #999;
+  background-color: #2d2d52;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 20px 15px;
+  }
+
+  .lesson-content-wrapper {
+    padding: 20px;
+  }
+
+  .lesson-meta-data,
+  .pages-section {
+    padding: 20px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .page-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lesson-editor h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
 }

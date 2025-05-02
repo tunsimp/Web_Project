@@ -1,6 +1,5 @@
 // models/LessonPage.js
 const pool = require("../config/db");
-const path = require("path");
 const FileUtils = require("../utils/FileUtils");
 
 class LessonPageModel {
