@@ -1,5 +1,5 @@
 // controllers/dockerController.js
-const { signToken, verifyToken } = require("../utils/jwt"); // Adjust path as needed
+const { signToken, verifyToken } = require("../utils/JWTUtils"); // Adjust path as needed
 const Docker = require("dockerode");
 const docker = new Docker({ socketPath: "\\\\.\\pipe\\docker_engine" });
 const net = require("net");

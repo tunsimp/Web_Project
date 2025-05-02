@@ -1,5 +1,5 @@
 // middleware/checkAuth.js
-const { verifyToken } = require("../utils/jwt"); // Adjust path as needed
+const { verifyToken } = require("../utils/JWTUtils"); // Adjust path as needed
 
 const checkAuth = (req, res, next) => {
   const token = req.cookies.token;

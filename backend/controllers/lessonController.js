@@ -34,22 +34,80 @@ exports.getLessonById = async (req, res) => {
 };
 
 exports.createLesson = async (req, res) => {
-  try {
-    const { title, description } = req.body;
+  const { title, description, pages } = req.body;
 
-    if (!title || !description) {
-      return res
-        .status(400)
-        .json({ message: "Title and description are required" });
+  // Basic validation
+  if (
+    !title ||
+    !description ||
+    !pages ||
+    !Array.isArray(pages) ||
+    pages.length === 0
+  ) {
+    return res.status(400).json({
+      message:
+        "Missing required fields: title, description, and at least one page are required",
+    });
+  }
+
+  // Check that each page has page_number, content, and filename
+  for (const page of pages) {
+    if (!page.page_number || !page.content) {
+      return res.status(400).json({
+        message: "Each page must have a page_number and content",
+      });
     }
+    // Assign default filename if missing
+    if (!page.filename) {
+      console.warn(`Page ${page.page_number} missing filename, using default`);
+      page.filename = `page${page.page_number}.html`;
+    }
+  }
 
-    const lessonId = await Lesson.create(title, description);
-    res.status(201).json({ message: "Lesson created successfully", lessonId });
+  try {
+    // Create lesson data
+    const lessonData = { title, description, pages };
+
+    // Create the lesson and get the ID and path
+    const { LessonID, path, message } = await Lesson.create(
+      lessonData.title,
+      lessonData.description
+    );
+    if (message === "Directory already exists") {
+      return res.status(400).json({
+        message: "Lesson with this title already exists",
+      });
+    }
+    console.log(message, "ID:", LessonID, "at path:", path);
+    // Create lesson pages
+    const lessonPagesID = await LessonPage.create(
+      LessonID,
+      lessonData.pages.map((page) => ({
+        page_number: page.page_number,
+        content: page.content,
+        filename: page.filename, // Include filename
+        content_path: `content/${title}/${page.filename}`, // Consistent path
+      })),
+      path // Pass the base path
+    );
+
+    // Send success response
+    res.status(201).json({
+      message: "Lesson created successfully",
+      data: {
+        LessonId: LessonID,
+        title: lessonData.title,
+        description: lessonData.description,
+        pageCount: lessonData.pages.length,
+        lessonPagesID: lessonPagesID,
+      },
+    });
   } catch (error) {
     console.error("Error creating lesson:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to create lesson", error: error.message });
+    res.status(500).json({
+      message: "An error occurred while creating the lesson",
+      error: error.message,
+    });
   }
 };
 
@@ -182,13 +240,13 @@ exports.createLessonPage = async (req, res) => {
 exports.updateLessonPage = async (req, res) => {
   try {
     const { pageId } = req.params;
-    const { content } = req.body;
+    const { content, content_path } = req.body;
 
     if (!content) {
       return res.status(400).json({ message: "Content is required" });
     }
 
-    const success = await LessonPage.update(pageId, content);
+    const success = await LessonPage.update(pageId, content, content_path);
 
     if (!success) {
       return res.status(404).json({ message: "Page not found" });
@@ -205,8 +263,8 @@ exports.updateLessonPage = async (req, res) => {
 
 exports.deleteLessonPage = async (req, res) => {
   try {
-    const { LessonId, pageNumber } = req.params;
-    const success = await LessonPage.delete(LessonId, pageNumber);
+    const { pageId } = req.params;
+    const success = await LessonPage.delete(pageId);
 
     if (!success) {
       return res.status(404).json({ message: "Page not found" });
@@ -304,84 +362,6 @@ exports.getUserLessonsWithProgress = async (req, res) => {
     console.error("Error fetching lessons with progress:", error);
     res.status(500).json({
       message: "Failed to fetch lessons with progress",
-      error: error.message,
-    });
-  }
-};
-
-exports.createLesson = async (req, res) => {
-  const { title, description, pages } = req.body;
-
-  // Basic validation
-  if (
-    !title ||
-    !description ||
-    !pages ||
-    !Array.isArray(pages) ||
-    pages.length === 0
-  ) {
-    return res.status(400).json({
-      message:
-        "Missing required fields: title, description, and at least one page are required",
-    });
-  }
-
-  // Check that each page has page_number, content, and filename
-  for (const page of pages) {
-    if (!page.page_number || !page.content) {
-      return res.status(400).json({
-        message: "Each page must have a page_number and content",
-      });
-    }
-    // Assign default filename if missing
-    if (!page.filename) {
-      console.warn(`Page ${page.page_number} missing filename, using default`);
-      page.filename = `page${page.page_number}.html`;
-    }
-  }
-
-  try {
-    // Create lesson data
-    const lessonData = { title, description, pages };
-
-    // Create the lesson and get the ID and path
-    const { LessonID, path, message } = await Lesson.create(
-      lessonData.title,
-      lessonData.description
-    );
-    if (message === "Directory already exists") {
-      return res.status(400).json({
-        message: "Lesson with this title already exists",
-      });
-    }
-    console.log(message, "ID:", LessonID, "at path:", path);
-    // Create lesson pages
-    const lessonPagesID = await LessonPage.create(
-      LessonID,
-      lessonData.pages.map((page) => ({
-        page_number: page.page_number,
-        content: page.content,
-        filename: page.filename, // Include filename
-        content_path: `content/${title}/${page.filename}`, // Consistent path
-      })),
-      path // Pass the base path
-    );
-
-    // Send success response
-    res.status(201).json({
-      message: "Lesson created successfully",
-      data: {
-        LessonId: LessonID,
-        title: lessonData.title,
-        description: lessonData.description,
-        pageCount: lessonData.pages.length,
-        lessonPagesID: lessonPagesID,
-      },
-    });
-  } catch (error) {
-    console.error("Error creating lesson:", error);
-    res.status(500).json({
-      message: "An error occurred while creating the lesson",
       error: error.message,
     });
   }

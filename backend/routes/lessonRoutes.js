@@ -20,7 +20,7 @@ router.get("/:lessonId/pages/:pageNumber", lessonController.getLessonPage);
 router.get("/:lessonId/pages", lessonController.getAllLessonPages);
 router.post("/:lessonId/pages", lessonController.createLessonPage);
 router.put("/pages/:pageId", lessonController.updateLessonPage);
-router.delete("/:lessonId/:pageNumber", lessonController.deleteLessonPage);
+router.delete("/page/:pageId", lessonController.deleteLessonPage);
 router.post("/create", lessonController.createLesson);
 
 // // User progress routes

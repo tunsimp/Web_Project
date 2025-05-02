@@ -1,7 +1,8 @@
 // models/LessonPage.js
 const pool = require("../config/db");
-const fs = require("fs").promises;
 const path = require("path");
+const FileUtils = require("../utils/FileUtils");
+
 class LessonPageModel {
   // Get all pages for a lesson
   static async getAllByLessonId(lessonId) {
@@ -30,10 +31,10 @@ class LessonPageModel {
   }
 
   // Create a new page
-  static async create(lessonId, pages, path) {
+  static async create(lessonId, pages, basePath) {
     try {
       // Validate inputs
-      if (!path) {
+      if (!basePath) {
         throw new Error("Base path is required");
       }
       if (!pages || !Array.isArray(pages)) {
@@ -54,9 +55,6 @@ class LessonPageModel {
           );
         }
 
-        // Ensure the directory exists
-        await fs.mkdir(path, { recursive: true });
-
         const [result] = await pool.query(
           "INSERT INTO LessonPages (lesson_id, page_number, content_path) VALUES (?, ?, ?)",
           [lessonId, page.page_number, page.content_path]
@@ -64,11 +62,11 @@ class LessonPageModel {
         insertIds.push(result.insertId);
 
         // Write the content to the file
-        const filePath = `${path}/${page.filename}`;
-        await fs.writeFile(filePath, page.content, "utf8");
+        const filePath = `${basePath}/${page.filename}`;
+        await FileUtils.writeFile(filePath);
         console.log(`Wrote file: ${filePath}`);
       }
-      console.log("Base path:", path);
+      console.log("Base path:", basePath);
       return insertIds;
     } catch (error) {
       console.error("Error in LessonPage.create:", error);
@@ -77,14 +75,36 @@ class LessonPageModel {
   }
 
   // Update a page
-  static async update(lessonpageId, content) {
+  static async update(lessonpageId, content, fileName) {
     try {
-      const [result] = await pool.query(
-        "UPDATE LessonPages SET content = ? WHERE lessonpage_id = ?",
-        [content, lessonpageId]
+      // Get the current page data
+      const [pageData] = await pool.query(
+        "SELECT * FROM LessonPages WHERE lessonpage_id = ?",
+        [lessonpageId]
       );
+
+      if (!pageData || pageData.length === 0) {
+        throw new Error("Lesson page not found");
+      }
+
+      const previousPath = pageData[0].content_path;
+      const newContentPath = previousPath.replace(/[^/]+$/, fileName);
+
+      // Delete the existing file if it exists and is different from the new path
+      await FileUtils.deleteFile(previousPath);
+
+      // Write the content to the new file
+      await FileUtils.writeFile(newContentPath, content);
+
+      // Update the database with the new path
+      const [result] = await pool.query(
+        "UPDATE LessonPages SET content_path = ? WHERE lessonpage_id = ?",
+        [newContentPath, lessonpageId]
+      );
+
       return result.affectedRows > 0;
     } catch (error) {
+      console.error(`Error updating lesson page: ${error.message}`);
       throw error;
     }
   }
@@ -104,23 +124,17 @@ class LessonPageModel {
       }
 
       const { lesson_id, page_number, content_path } = pageData[0];
-      const deletePath = path.join(process.cwd(), content_path);
-      console.log("Deleting page:", lessonpageId, deletePath);
-      fs.unlink(deletePath, (err) => {
-        if (err) {
-          console.error("Error deleting file:", err);
-          return err;
-        } else {
-          console.log("File deleted successfully:", content_path);
-        }
-      });
+      console.log("Deleting page:", lessonpageId, content_path);
 
-      // Delete the page
+      // Delete the file
+      await FileUtils.deleteFile(content_path);
+
+      // Delete the page from database
       await pool.query("DELETE FROM LessonPages WHERE lessonpage_id = ?", [
         lessonpageId,
       ]);
 
-      // Reorder remaining pages - now using the retrieved values
+      // Reorder remaining pages
       await pool.query(
         "UPDATE LessonPages SET page_number = page_number - 1 WHERE lesson_id = ? AND page_number > ?",
         [lesson_id, page_number]
@@ -133,16 +147,9 @@ class LessonPageModel {
     }
   }
 
-  static async getContentByPaths(filePath) {
-    try {
-      const absolutePath = path.resolve(__dirname, "..", filePath);
-      console.log("Reading file:", absolutePath);
-      const content = await fs.readFile(absolutePath, "utf8");
-      return content || null;
-    } catch (error) {
-      console.error(`Error reading file: ${error.message}`);
-      throw error;
-    }
+  // Get content from a file
+  static async getContentByPath(filePath) {
+    return await FileUtils.readFile(filePath);
   }
 }
 

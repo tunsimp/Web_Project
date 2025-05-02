@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const { signToken, verifyToken } = require("../utils/jwt");
+const { signToken, verifyToken } = require("../utils/JWTUtils");
 const UserModel = require("../models/UserModel");
 
 exports.login = async (req, res) => {

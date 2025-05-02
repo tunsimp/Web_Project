@@ -3,11 +3,13 @@ import axios from 'axios';
 import Navbar from '../NavBar/NavBar';
 import { useParams } from 'react-router-dom';
 import './LessonEditor.css';
+
 interface LessonPage {
   lessonpage_id: number;
   lesson_id: number;
   page_number: number;
   content_path: string;
+  fileToUpload?: File; // Optional property to store the file object
 }
 
 interface Lesson {
@@ -18,11 +20,12 @@ interface Lesson {
 }
 
 const LessonEditor = () => {
-  const lessonID= useParams().lessonId;
+  const lessonID = useParams().lessonId;
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [uploadingPageId, setUploadingPageId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -48,7 +51,7 @@ const LessonEditor = () => {
     };
 
     fetchLesson();
-  }, []);
+  }, [lessonID]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -60,16 +63,36 @@ const LessonEditor = () => {
     }
   };
 
-  const handlePageContentChange = (pageId: number, value: string) => {
-    if (lesson && lesson.pages) {
-      const updatedPages = lesson.pages.map(page => 
-        page.lessonpage_id === pageId ? { ...page, content_path: value } : page
-      );
+  const handleFileUpload = async (pageId: number, file: File) => {
+    if (!lesson) return;
+    
+    // Show uploading status
+    setUploadingPageId(pageId);
+    
+    try {
+      // Store the file in state for the specific page
+      if (lesson.pages) {
+        const updatedPages = lesson.pages.map(page => 
+          page.lessonpage_id === pageId ? { 
+            ...page, 
+            content_path: file.name, // Set the file name as the content_path
+            fileToUpload: file       // Store the file object for later use
+          } : page
+        );
+        
+        setLesson({
+          ...lesson,
+          pages: updatedPages
+        });
+      }
       
-      setLesson({
-        ...lesson,
-        pages: updatedPages
-      });
+      setMessage({ text: 'File selected. Click "Save Page" to upload.', type: 'success' });
+    } catch (error) {
+      console.error('Error handling file selection:', error);
+      setMessage({ text: 'Failed to select file', type: 'error' });
+    } finally {
+      setUploadingPageId(null);
+      setTimeout(() => setMessage(null), 3000);
     }
   };
 
@@ -85,18 +108,8 @@ const LessonEditor = () => {
         description: lesson.description
       }, { withCredentials: true });
       
-      // Update each page
-      if (lesson.pages) {
-        for (const page of lesson.pages) {
-          await axios.put(`http://localhost:5000/api/lessons/pages/${page.lessonpage_id}`, {
-            content_path: page.content_path
-          }, { withCredentials: true });
-        }
-      }
-      
       setMessage({ text: 'Lesson updated successfully!', type: 'success' });
       
-      // Clear message after 3 seconds
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       console.error('Error updating lesson:', error);
@@ -109,7 +122,7 @@ const LessonEditor = () => {
   const addNewPage = () => {
     if (!lesson) return;
     
-    const pageNumber = lesson.pages ? Math.max(...lesson.pages.map(p => p.page_number)) + 1 : 1;
+    const pageNumber = lesson.pages ? Math.max(...lesson.pages.map(p => p.page_number), 0) + 1 : 1;
     
     setLesson({
       ...lesson,
@@ -126,18 +139,75 @@ const LessonEditor = () => {
   };
 
   const savePage = async (page: LessonPage) => {
+    setUploadingPageId(page.lessonpage_id);
+    
     try {
-      if (page.lessonpage_id < 0) {
-        // This is a new page
+      // If there's a file to upload, read its content
+      if (page.fileToUpload) {
+        const fileContent = await readFileAsText(page.fileToUpload);
+        const fileName = page.fileToUpload.name;
+        
+        if (page.lessonpage_id < 0) {
+          // This is a new page
+          const response = await axios.post(`http://localhost:5000/api/lessons/${lesson?.lesson_id}/pages`, {
+            page_number: page.page_number,
+            content_path: fileName,  // Send file name as content_path
+            content: fileContent     // Send the file content
+          }, { withCredentials: true });
+          
+          // Update page with real ID
+          if (lesson && lesson.pages) {
+            const updatedPages = lesson.pages.map(p => 
+              p.page_number === page.page_number && p.lessonpage_id === -1 ? { 
+                ...response.data,
+                fileToUpload: undefined // Clear the file object
+              } : p
+            );
+            
+            setLesson({
+              ...lesson,
+              pages: updatedPages
+            });
+          }
+          
+          setMessage({ text: 'New page created with uploaded content!', type: 'success' });
+        } else {
+          // Update existing page with file content
+          await axios.put(`http://localhost:5000/api/lessons/pages/${page.lessonpage_id}`, {
+            content_path: fileName,  // Send file name as content_path
+            content: fileContent     // Send the file content
+          }, { withCredentials: true });
+          
+          // Update the page in state to remove the file object
+          if (lesson && lesson.pages) {
+            const updatedPages = lesson.pages.map(p => 
+              p.lessonpage_id === page.lessonpage_id ? { 
+                ...p,
+                content_path: fileName, // Update content path with the file name
+                fileToUpload: undefined // Clear the file object
+              } : p
+            );
+            
+            setLesson({
+              ...lesson,
+              pages: updatedPages
+            });
+          }
+          
+          setMessage({ text: 'Page updated with uploaded content!', type: 'success' });
+        }
+      } else if (page.lessonpage_id < 0) {
+        // New page without file
         const response = await axios.post(`http://localhost:5000/api/lessons/${lesson?.lesson_id}/pages`, {
           page_number: page.page_number,
-          content_path: page.content_path
+          content_path: '',
+          content: "" // Empty content
         }, { withCredentials: true });
         
         // Update page with real ID
         if (lesson && lesson.pages) {
           const updatedPages = lesson.pages.map(p => 
-            p.page_number === page.page_number ? { ...response.data } : p
+            p.page_number === page.page_number && p.lessonpage_id === -1 ? { ...response.data } : p
           );
           
           setLesson({
@@ -148,11 +218,8 @@ const LessonEditor = () => {
         
         setMessage({ text: 'New page created!', type: 'success' });
       } else {
-        await axios.put(`http://localhost:5000/api/lessons/pages/${page.lessonpage_id}`, {
-          content_path: page.content_path
-        }, { withCredentials: true });
-        
-        setMessage({ text: 'Page updated!', type: 'success' });
+        // Update page without file (no change to content)
+        setMessage({ text: 'No changes to upload. Please select a file first.', type: 'error' });
       }
       
       // Clear message after 3 seconds
@@ -160,7 +227,19 @@ const LessonEditor = () => {
     } catch (error) {
       console.error('Error saving page:', error);
       setMessage({ text: 'Failed to save page', type: 'error' });
+    } finally {
+      setUploadingPageId(null);
     }
+  };
+  
+  // Helper function to read file content as text
+  const readFileAsText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    });
   };
 
   const deletePage = async (pageId: number) => {
@@ -268,13 +347,28 @@ const LessonEditor = () => {
                   </div>
                   
                   <div className="form-group">
-                    <label htmlFor={`page-${page.lessonpage_id}`}>Content Path</label>
-                    <textarea 
-                      id={`page-${page.lessonpage_id}`}
-                      value={page.content_path} 
-                      onChange={(e) => handlePageContentChange(page.lessonpage_id, e.target.value)}
-                      rows={4}
-                    ></textarea>
+                    <label>Current Content Path</label>
+                    <p className="current-path">{page.content_path || 'No file uploaded yet'}</p>
+                    
+                    <label htmlFor={`page-${page.lessonpage_id}`}>Upload HTML Content</label>
+                    <div className="file-upload-container">
+                      <input 
+                        type="file"
+                        id={`page-${page.lessonpage_id}`}
+                        accept='.html'
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleFileUpload(page.lessonpage_id, e.target.files[0]);
+                          }
+                        }}
+                      />
+                      {page.fileToUpload && (
+                        <span className="file-selected">File selected: {page.fileToUpload.name}</span>
+                      )}
+                      {uploadingPageId === page.lessonpage_id && (
+                        <span className="uploading-indicator">Uploading...</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
