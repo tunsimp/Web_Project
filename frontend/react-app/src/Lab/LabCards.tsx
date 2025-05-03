@@ -33,7 +33,7 @@ function LabCards({
     const handleStart = () => {
         axios
           .post(
-            "http://localhost:5000/api/route/create-container",
+            "http://localhost:5000/api/labs/create-container",
             {
               labinfo_id: lab_id,
             },
@@ -59,7 +59,7 @@ function LabCards({
     const handleStop = () => {
         axios
             .post(
-                "http://localhost:5000/api/route/delete-container",
+                "http://localhost:5000/api/labs/delete-container",
                 {}, // Empty payload since no data is needed
                 { withCredentials: true } // Include cookies in the request
             )
@@ -77,7 +77,7 @@ function LabCards({
         console.log("Submit clicked with value:", textValue);
         axios
             .get(
-                `http://localhost:5000/api/route/verify-flag?labinfo_id=${lab_id}&flag=${textValue}`,
+                `http://localhost:5000/api/labs/verify-flag?labinfo_id=${lab_id}&flag=${textValue}`,
                 { withCredentials: true } // Include cookies in the request
             )
             .then((response) => {

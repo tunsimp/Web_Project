@@ -24,7 +24,7 @@ const Lab = () => {
         const fetchLabs = async () => {
             try {
                 // Use the labs-with-status endpoint instead of labs
-                const response = await axios.get("http://localhost:5000/api/route/labs", { withCredentials: true });
+                const response = await axios.get("http://localhost:5000/api/labs", { withCredentials: true });
                 
                 // Convert the object of labs to an array
                 const labsArray = Object.keys(response.data).map(key => ({
