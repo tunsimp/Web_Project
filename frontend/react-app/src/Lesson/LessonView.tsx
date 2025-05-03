@@ -82,7 +82,7 @@ const LessonView = () => {
       const isLastPage = pageNumber === totalPages;
       const status = isLastPage ? 'complete' : 'incomplete';
       await axios.post(
-        `http://localhost:5000/api/lessons/progress/${lessonIdNum}/${lessonId}`,
+        `http://localhost:5000/api/lessons/progress/${lessonId}`,
         { currentPage: pageNumber, status },
         { withCredentials: true }
       );
@@ -102,7 +102,7 @@ const LessonView = () => {
   const handleComplete = async () => {
     try {
       await axios.post(
-        `http://localhost:5000/api/lessons/progress/${lessonIdNum}/${lessonIdNum}`,
+        `http://localhost:5000/api/lessons/progress/${lessonIdNum}`,
         { currentPage: pageNum, status: 'complete' },
         { withCredentials: true }
       );

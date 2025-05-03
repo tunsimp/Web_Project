@@ -193,7 +193,7 @@ exports.getLessonPageContent = async (req, res) => {
   try {
     const { path } = req.params;
     console.log("Requested path:", path);
-    const content = await LessonPage.getContentByPaths(`content/${path}`); // Prepend 'content/'
+    const content = await LessonPage.getContentByPath(`content/${path}`); // Prepend 'content/'
     if (!content) {
       console.log("Content not found for path:", path);
       return res.status(404).json({ message: "Content not found" });
