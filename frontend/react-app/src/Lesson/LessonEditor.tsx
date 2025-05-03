@@ -150,7 +150,6 @@ const LessonEditor = () => {
         if (page.lessonpage_id < 0) {
           // This is a new page
           const response = await axios.post(`http://localhost:5000/api/lessons/${lesson?.lesson_id}/pages`, {
-            page_number: page.page_number,
             content_path: fileName,  // Send file name as content_path
             content: fileContent     // Send the file content
           }, { withCredentials: true });
