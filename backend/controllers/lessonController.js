@@ -79,17 +79,28 @@ exports.createLesson = async (req, res) => {
       });
     }
     console.log(message, "ID:", LessonID, "at path:", path);
-    // Create lesson pages
-    const lessonPagesID = await LessonPage.create(
-      LessonID,
-      lessonData.pages.map((page) => ({
-        page_number: page.page_number,
-        content: page.content,
-        filename: page.filename, // Include filename
-        content_path: `content/${title}/${page.filename}`, // Consistent path
-      })),
-      path // Pass the base path
-    );
+
+    // Create lesson pages one by one and collect their IDs
+    const lessonPagesIDs = [];
+    for (const page of lessonData.pages) {
+      // Prepare content path for this page
+      const contentPath = `content/${title}/${page.filename}`;
+
+      // Create the page with necessary data
+      const pageInsertIds = await LessonPage.create(
+        LessonID,
+        {
+          page_number: page.page_number,
+          content: page.content,
+          filename: page.filename,
+          content_path: contentPath,
+        },
+        path // Pass the base path
+      );
+
+      // Add the inserted page ID(s) to our collection
+      lessonPagesIDs.push(...pageInsertIds);
+    }
 
     // Send success response
     res.status(201).json({
@@ -99,7 +110,7 @@ exports.createLesson = async (req, res) => {
         title: lessonData.title,
         description: lessonData.description,
         pageCount: lessonData.pages.length,
-        lessonPagesID: lessonPagesID,
+        lessonPagesIDs: lessonPagesIDs,
       },
     });
   } catch (error) {
@@ -211,24 +222,44 @@ exports.getLessonPageContent = async (req, res) => {
 exports.createLessonPage = async (req, res) => {
   try {
     const { lessonId } = req.params;
-    const { pageNumber, content } = req.body;
+    const { page_number, content_path, content } = req.body;
 
-    if (!content) {
-      return res.status(400).json({ message: "Content is required" });
+    // Get the lesson to access its path
+    const lesson = await Lesson.getById(lessonId);
+    if (!lesson) {
+      return res.status(404).json({ message: "Lesson not found" });
     }
 
-    // If pageNumber is not provided, add it as the last page
-    let finalPageNumber = pageNumber;
+    // If page_number is not provided, add it as the last page
+    let finalPageNumber = page_number;
     if (!finalPageNumber) {
       const pages = await LessonPage.getAllByLessonId(lessonId);
       finalPageNumber =
-        pages.length > 0 ? pages[pages.length - 1].page_number + 1 : 1;
+        pages.length > 0 ? Math.max(...pages.map((p) => p.page_number)) + 1 : 1;
     }
 
-    const pageId = await LessonPage.create(lessonId, finalPageNumber, content);
-    res
-      .status(201)
-      .json({ message: "Lesson page created successfully", pageId });
+    // Create a filename from content_path or generate one
+    const filename = content_path || `page${finalPageNumber}.html`;
+
+    // Create page object with all required properties
+    const pageData = {
+      page_number: finalPageNumber,
+      content: content || "",
+      filename: filename,
+      content_path: `content/${lesson.title}/${filename}`,
+    };
+
+    const path = `${"./content"}/${lesson.title}`;
+    const insertIds = await LessonPage.create(lessonId, pageData, path);
+    console.log("path:", path);
+    // Return the full page data for the frontend
+    res.status(201).json({
+      message: "Lesson page created successfully",
+      lessonpage_id: insertIds[0],
+      lesson_id: Number(lessonId),
+      page_number: finalPageNumber,
+      content_path: pageData.content_path,
+    });
   } catch (error) {
     console.error("Error creating lesson page:", error);
     res

@@ -54,6 +54,9 @@ class FileUtils {
    */
   static async writeFile(filePath, content, useAbsolute = true) {
     try {
+      if (content === undefined || content === null) {
+        throw new Error("Content is undefined or null");
+      }
       const targetPath = useAbsolute
         ? path.resolve(process.cwd(), filePath)
         : filePath;

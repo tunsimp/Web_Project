@@ -30,41 +30,67 @@ class LessonPageModel {
   }
 
   // Create a new page
-  static async create(lessonId, pages, basePath) {
+  static async create(lessonId, pageData, basePath) {
     try {
       // Validate inputs
       if (!basePath) {
         throw new Error("Base path is required");
       }
-      if (!pages || !Array.isArray(pages)) {
-        throw new Error("Pages must be a non-empty array");
+
+      // Handle both object and primitive parameters
+      // This makes the function work with both old and new calling patterns
+      let page = {};
+
+      if (typeof pageData === "object") {
+        // New format: receiving a page object
+        page = pageData;
+      } else {
+        // Old format: receiving separate parameters
+        // This is for backward compatibility
+        const pageNumber = pageData; // second param was pageNumber in old version
+        const content = arguments[2]; // third param was content in old version
+        basePath = arguments[3]; // fourth param was basePath in old version
+
+        page = {
+          page_number: pageNumber,
+          content: content,
+          filename: `page${pageNumber}.html`,
+          content_path: `content/lesson${lessonId}/page${pageNumber}.html`,
+        };
+      }
+
+      // Validate page properties
+      if (!page.page_number) {
+        throw new Error("Page number is required");
+      }
+
+      // Set default filename if not provided
+      if (!page.filename) {
+        page.filename = `page${page.page_number}.html`;
+      }
+
+      // Set default content_path if not provided
+      if (!page.content_path) {
+        page.content_path = `content/lesson${lessonId}/${page.filename}`;
+      }
+
+      // Check for content - required for file writing
+      if (!page.content) {
+        page.content = ""; // Default to empty string if no content provided
       }
 
       const insertIds = [];
-      for (const page of pages) {
-        // Validate page properties
-        if (
-          !page.page_number ||
-          !page.content_path ||
-          !page.filename ||
-          !page.content
-        ) {
-          throw new Error(
-            `Invalid page data: page_number, content_path, filename, and content are required for page ${page.page_number}`
-          );
-        }
+      const [result] = await pool.query(
+        "INSERT INTO LessonPages (lesson_id, page_number, content_path) VALUES (?, ?, ?)",
+        [lessonId, page.page_number, page.content_path]
+      );
+      insertIds.push(result.insertId);
 
-        const [result] = await pool.query(
-          "INSERT INTO LessonPages (lesson_id, page_number, content_path) VALUES (?, ?, ?)",
-          [lessonId, page.page_number, page.content_path]
-        );
-        insertIds.push(result.insertId);
+      // Write the content to the file
+      const filePath = `${basePath}/${page.filename}`;
+      await FileUtils.writeFile(filePath, page.content);
+      console.log(`Wrote file: ${filePath}`);
 
-        // Write the content to the file
-        const filePath = `${basePath}/${page.filename}`;
-        await FileUtils.writeFile(filePath);
-        console.log(`Wrote file: ${filePath}`);
-      }
       console.log("Base path:", basePath);
       return insertIds;
     } catch (error) {
