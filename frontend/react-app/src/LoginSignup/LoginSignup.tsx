@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import axios from 'axios';
 import './LoginSignup.css';
 import { useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
 
 const LoginSignup = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,14 +12,12 @@ const LoginSignup = () => {
     confirmPassword: '',
   });
   const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const toggleForm = () => {
-    console.log('Toggling form, current isLogin:', isLogin); // Debug log
     setIsLogin(!isLogin);
     setFormData({ username: '', email: '', password: '', confirmPassword: '' });
-    // Keep message visible after toggle for better UX
   };
 
   const handleInputChange = (e) => {
@@ -28,61 +26,52 @@ const LoginSignup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Prevent double submission
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setMessage('');
 
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      setMessage('Passwords do not match');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const payload = isLogin
-        ? { username: formData.username, password: formData.password }
-        : {
-            username: formData.username,
-            email: formData.email,
-            password: formData.password,
-          };
+      if (!isLogin && formData.password !== formData.confirmPassword) {
+        setMessage('Passwords do not match');
+        return;
+      }
 
-      const response = await axios.post(`http://localhost:5000${endpoint}`, payload,{
-        withCredentials: true,
-      });
-      console.log('Backend response:', response.data); // Debug log
+      let response;
+      
+      if (isLogin) {
+        response = await authService.login(formData.username, formData.password);
+      } else {
+        response = await authService.register(formData.username, formData.email, formData.password);
+      }
 
-      if (response.data.success) {
+      if (response.success) {
         setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+        
         if (isLogin) {
-          // Successful login: redirect to /home
-          if (response.data.isAdmin) {
-            setMessage('Login successful');
-            navigate('/admin'); // Redirect to admin page if user is admin
-          }
-          else{
           setMessage('Login successful');
-          navigate('/home');}
+          if (response.isAdmin) {
+            navigate('/admin');
+          } else {
+            navigate('/home');
+          }
         } else {
-          // Successful registration: switch to login form
           setMessage('Registration successful! Please log in.');
-          toggleForm();
+          setIsLogin(true);
         }
       } else {
-        setMessage(response.data.message || 'Something went wrong');
+        setMessage(response.message || 'Something went wrong');
       }
     } catch (error) {
       setMessage(error.response?.data?.message || 'Error connecting to server');
-      console.error('Fetch error:', error);
+      console.error('Authentication error:', error);
     } finally {
-      setIsSubmitting(false); // Re-enable submit button
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="container">
-          <div className="background-wrapper"></div>
+      <div className="background-wrapper"></div>
 
       <div className="login-header">
         <div className="text">TSAcademy</div>

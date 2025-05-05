@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Navbar from "../NavBar/NavBar";
+import { adminService, LessonData } from '../services/adminService';
 import './Admin.css';
-
-interface LessonData {
-  id: number;
-  title: string;
-  description: string;
-}
 
 const Admin = () => {
     const [lessons, setLessons] = useState<LessonData[]>([]);
@@ -19,15 +13,11 @@ const Admin = () => {
     useEffect(() => {
         const fetchLessons = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/lessons', { withCredentials: true });
-                const lessonsArray = Object.keys(response.data).map(key => ({
-                    id: key,
-                    ...response.data[key]
-                }));
-                setLessons(lessonsArray);
+                const lessonsData = await adminService.fetchLessons();
+                setLessons(lessonsData);
                 setLoading(false);
             } catch (err) {
-                setError('Failed to fetch lessons. Please try again later.');
+                setError(err instanceof Error ? err.message : 'Failed to fetch lessons. Please try again later.');
                 setLoading(false);
             }
         };
@@ -42,11 +32,10 @@ const Admin = () => {
     const handleDelete = async (id: number) => {
         if (window.confirm('Are you sure you want to delete this lesson?')) { 
           try {
-            await axios.delete(`http://localhost:5000/api/lessons/${id}`, { withCredentials: true });
+            await adminService.deleteLesson(id);
             setLessons(lessons.filter(lesson => lesson.id !== id));
           } catch (err) {
-            setError('Failed to delete lesson. Please try again later.');
-            console.error("Error deleting lesson:", err);
+            setError(err instanceof Error ? err.message : 'Failed to delete lesson. Please try again later.');
           }
         }
     };

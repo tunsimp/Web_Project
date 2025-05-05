@@ -1,47 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Navbar from '../NavBar/NavBar';
 import { useParams } from 'react-router-dom';
+import Navbar from '../NavBar/NavBar';
 import './LessonEditor.css';
-
-interface LessonPage {
-  lessonpage_id: number;
-  lesson_id: number;
-  page_number: number;
-  content_path: string;
-  fileToUpload?: File; // Optional property to store the file object
-}
-
-interface Lesson {
-  lesson_id: number;
-  title: string;
-  description: string;
-  pages?: LessonPage[];
-}
+import lessonService, { LessonData, LessonPage } from '../services/lessonService';
 
 const LessonEditor = () => {
-  const lessonID = useParams().lessonId;
-  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const { lessonId } = useParams<{ lessonId: string }>();
+  const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [uploadingPageId, setUploadingPageId] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchLesson = async () => {
+    const loadLesson = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/lessons/${lessonID}`, { withCredentials: true });
-        const lessonData = response.data;
-        
-        // Fetch pages for this lesson
-        const pagesResponse = await axios.get(`http://localhost:5000/api/lessons/${lessonData.lesson_id}/pages`, { 
-          withCredentials: true 
-        });
-        
-        setLesson({
-          ...lessonData,
-          pages: pagesResponse.data
-        });
+        if (!lessonId) return;
+        const lessonData = await lessonService.fetchLessonData(lessonId);
+        setLesson(lessonData);
       } catch (error) {
         console.error('Error fetching lesson data:', error);
         setMessage({ text: 'Failed to load lesson data', type: 'error' });
@@ -50,8 +26,8 @@ const LessonEditor = () => {
       }
     };
 
-    fetchLesson();
-  }, [lessonID]);
+    loadLesson();
+  }, [lessonId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -63,7 +39,7 @@ const LessonEditor = () => {
     }
   };
 
-  const handleFileUpload = async (pageId: number, file: File) => {
+  const handleFileUpload = (pageId: number, file: File) => {
     if (!lesson) return;
     
     // Show uploading status
@@ -103,13 +79,8 @@ const LessonEditor = () => {
     setSaving(true);
     try {
       // Update lesson details
-      await axios.put(`http://localhost:5000/api/lessons/${lesson.lesson_id}`, {
-        title: lesson.title,
-        description: lesson.description
-      }, { withCredentials: true });
-      
+      await lessonService.updateLessonDetails(lesson.lesson_id, lesson.title, lesson.description);
       setMessage({ text: 'Lesson updated successfully!', type: 'success' });
-      
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       console.error('Error updating lesson:', error);
@@ -139,74 +110,21 @@ const LessonEditor = () => {
   };
 
   const savePage = async (page: LessonPage) => {
+    if (!lesson) return;
     setUploadingPageId(page.lessonpage_id);
     
     try {
-      // If there's a file to upload, read its content
-      if (page.fileToUpload) {
-        const fileContent = await readFileAsText(page.fileToUpload);
-        const fileName = page.fileToUpload.name;
-        
-        if (page.lessonpage_id < 0) {
-          // This is a new page
-          const response = await axios.post(`http://localhost:5000/api/lessons/${lesson?.lesson_id}/pages`, {
-            content_path: fileName,  // Send file name as content_path
-            content: fileContent     // Send the file content
-          }, { withCredentials: true });
-          
-          // Update page with real ID
-          if (lesson && lesson.pages) {
-            const updatedPages = lesson.pages.map(p => 
-              p.page_number === page.page_number && p.lessonpage_id === -1 ? { 
-                ...response.data,
-                fileToUpload: undefined // Clear the file object
-              } : p
-            );
-            
-            setLesson({
-              ...lesson,
-              pages: updatedPages
-            });
-          }
-          
-          setMessage({ text: 'New page created with uploaded content!', type: 'success' });
-        } else {
-          // Update existing page with file content
-          await axios.put(`http://localhost:5000/api/lessons/pages/${page.lessonpage_id}`, {
-            content_path: fileName,  // Send file name as content_path 
-            content: fileContent     // Send the file content
-          }, { withCredentials: true });
-          
-          // Update the page in state to remove the file object
-          if (lesson && lesson.pages) {
-            const updatedPages = lesson.pages.map(p => 
-              p.lessonpage_id === page.lessonpage_id ? { 
-                ...p,
-                content_path: fileName, // Update content path with the file name
-                fileToUpload: undefined // Clear the file object
-              } : p
-            );
-            
-            setLesson({
-              ...lesson,
-              pages: updatedPages
-            });
-          }
-          
-          setMessage({ text: 'Page updated with uploaded content!', type: 'success' });
-        }
-      } else if (page.lessonpage_id < 0) {
-        // New page without file
-        const response = await axios.post(`http://localhost:5000/api/lessons/${lesson?.lesson_id}/pages`, {
-          page_number: page.page_number,
-          content_path: '',
-          content: "" // Empty content
-        }, { withCredentials: true });
+      if (page.lessonpage_id < 0) {
+        // This is a new page
+        const response = await lessonService.createLessonPage(lesson.lesson_id, page);
         
         // Update page with real ID
-        if (lesson && lesson.pages) {
+        if (lesson.pages) {
           const updatedPages = lesson.pages.map(p => 
-            p.page_number === page.page_number && p.lessonpage_id === -1 ? { ...response.data } : p
+            p.page_number === page.page_number && p.lessonpage_id === -1 ? { 
+              ...response.data,
+              fileToUpload: undefined // Clear the file object
+            } : p
           );
           
           setLesson({
@@ -215,40 +133,49 @@ const LessonEditor = () => {
           });
         }
         
-        setMessage({ text: 'New page created!', type: 'success' });
+        setMessage({ text: 'New page created with uploaded content!', type: 'success' });
       } else {
-        // Update page without file (no change to content)
-        setMessage({ text: 'No changes to upload. Please select a file first.', type: 'error' });
+        // Update existing page
+        await lessonService.updateLessonPage(page.lessonpage_id, page);
+        
+        // Update the page in state to remove the file object
+        if (lesson.pages) {
+          const updatedPages = lesson.pages.map(p => 
+            p.lessonpage_id === page.lessonpage_id ? { 
+              ...p,
+              content_path: page.fileToUpload ? page.fileToUpload.name : p.content_path,
+              fileToUpload: undefined // Clear the file object
+            } : p
+          );
+          
+          setLesson({
+            ...lesson,
+            pages: updatedPages
+          });
+        }
+        
+        setMessage({ text: 'Page updated with uploaded content!', type: 'success' });
       }
       
       // Clear message after 3 seconds
       setTimeout(() => setMessage(null), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving page:', error);
-      setMessage({ text: 'Failed to save page', type: 'error' });
+      setMessage({ 
+        text: error.message || 'Failed to save page', 
+        type: 'error' 
+      });
     } finally {
       setUploadingPageId(null);
     }
   };
-  
-  // Helper function to read file content as text
-  const readFileAsText = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsText(file);
-    });
-  };
 
-  const deletePage = async (pageId: number) => {
+  const handleDeletePage = async (pageId: number) => {
     if (!lesson || !lesson.pages) return;
     
     try {
       if (pageId > 0) { // Only make API call if it's an existing page
-        await axios.delete(`http://localhost:5000/api/lessons/pages/${pageId}`, { 
-          withCredentials: true 
-        });
+        await lessonService.deleteLessonPage(pageId);
       }
       
       // Update state to remove the page
@@ -289,7 +216,7 @@ const LessonEditor = () => {
           <div className="lesson-content-wrapper">
             <form onSubmit={handleSubmit}>
               <div className="lesson-meta-data">
-              <h2>Lesson Informations</h2>
+              <h2>Lesson Information</h2>
                 <div className="form-group">
                   <label htmlFor="title">Title</label>
                   <input 
@@ -348,7 +275,7 @@ const LessonEditor = () => {
                             Save Page
                           </button>
                           <button 
-                            onClick={() => deletePage(page.lessonpage_id)}
+                            onClick={() => handleDeletePage(page.lessonpage_id)}
                             className="delete-page-button"
                           >
                             Delete

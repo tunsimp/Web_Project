@@ -1,61 +1,39 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../NavBar/NavBar";
-import axios from "axios";
 import LessonCards from "./LessonCards";
 import "./lesson.css";
+import lessonService, { LessonData } from "../services/lessonService";
 
-// Define interfaces for type safety
-interface LessonData {
-  lesson_id: string;
-  title: string;
-  description: string;
-  status: 'complete' | 'incomplete';
-  current_page: number;
-  last_accessed: string | null;
-}
-
-// Helper function to trim text to approximately 30 words
-const trimDescription = (text: string, wordLimit: number = 20): string => {
-  const words = text.split(' ');
-  if (words.length <= wordLimit) return text;
-  
-  return words.slice(0, wordLimit).join(' ') + '...';
-};
-
-const Paths = () => {
+const Paths: React.FC = () => {
   const [lessons, setLessons] = useState<LessonData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLessons = async () => {
       try {
-        // Use the new endpoint for lessons with progress
-        const response = await axios.get("http://localhost:5000/api/lessons/user/progress", { 
-          withCredentials: true 
-        });
-        
-        setLessons(response.data);
+        const lessonData = await lessonService.getLessonsWithProgress();
+        setLessons(lessonData);
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching lessons:", err);
         setError("Failed to load lessons. Please try again later.");
         setLoading(false);
       }
     };
+    
     fetchLessons();
   }, []);
 
-  if (loading) return <div className="loading-container">Loading lessons...</div>;
-  if (error) return <div className="error-message">{error}</div>;
+  if (loading) return <div>Loading lessons...</div>;
+  if (error) return <div>{error}</div>;
 
   // Separate lessons into categories
   const inProgressLessons = lessons.filter(
-    lesson => lesson.current_page > 1 && lesson.status === 'incomplete'
+    lesson => lesson.current_page && lesson.current_page > 1 && lesson.status === 'incomplete'
   );
   
   const notStartedLessons = lessons.filter(
-    lesson => lesson.current_page === 1 && lesson.status === 'incomplete'
+    lesson => (!lesson.current_page || lesson.current_page === 1) && lesson.status === 'incomplete'
   );
   
   const completedLessons = lessons.filter(
@@ -73,12 +51,12 @@ const Paths = () => {
             <h2>Continue Learning</h2>
             <div className="lessons-container">
               {inProgressLessons.map((lesson) => (
-                <LessonCards 
+                <LessonCards
                   key={lesson.lesson_id}
+                  lesson_id={String(lesson.lesson_id)}
                   lesson_title={lesson.title}
-                  lesson_description={trimDescription(lesson.description)}
-                  lesson_id={lesson.lesson_id}
-                  status={lesson.status}
+                  lesson_description={lessonService.trimDescription(lesson.description)}
+                  status={lesson.status || 'incomplete'}
                   current_page={lesson.current_page}
                 />
               ))}
@@ -91,12 +69,13 @@ const Paths = () => {
             <h2>Available Lessons</h2>
             <div className="lessons-container">
               {notStartedLessons.map((lesson) => (
-                <LessonCards 
+                <LessonCards
                   key={lesson.lesson_id}
+                  lesson_id={String(lesson.lesson_id)}
                   lesson_title={lesson.title}
-                  lesson_description={trimDescription(lesson.description)}
-                  lesson_id={lesson.lesson_id}
-                  status={lesson.status}
+                  lesson_description={lessonService.trimDescription(lesson.description)}
+                  status={lesson.status || 'incomplete'}
+                  current_page={lesson.current_page}
                 />
               ))}
             </div>
@@ -108,12 +87,13 @@ const Paths = () => {
             <h2>Completed Lessons</h2>
             <div className="lessons-container">
               {completedLessons.map((lesson) => (
-                <LessonCards 
+                <LessonCards
                   key={lesson.lesson_id}
+                  lesson_id={String(lesson.lesson_id)}
                   lesson_title={lesson.title}
-                  lesson_description={trimDescription(lesson.description)}
-                  lesson_id={lesson.lesson_id}
-                  status={lesson.status}
+                  lesson_description={lessonService.trimDescription(lesson.description)}
+                  status={lesson.status || 'incomplete'}
+                  current_page={lesson.current_page}
                 />
               ))}
             </div>

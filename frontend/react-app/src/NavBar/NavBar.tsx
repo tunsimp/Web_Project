@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
-import axios from 'axios';
+import authService from '../services/authService';
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    axios
-      .get('http://localhost:5000/api/auth/check-auth', { withCredentials: true })
-      .then((response) => {
-        if (response.data.message === 'authenticated') {
-          setRole(response.data.user.role); // Assuming the user object has a role field
+    const fetchUserData = async () => {
+      try {
+        const authData = await authService.checkAuth();
+        if (authData.message === 'authenticated' && authData.user) {
+          setRole(authData.user.role);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Error fetching user data:', error);
-      });
+      }
+    };
+
+    fetchUserData();
   }, []);
 
-  const handleLogout = (e) => {
+  const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault(); // Prevent the default link behavior
-    axios
-      .post('http://localhost:5000/api/auth/logout', {}, { withCredentials: true })
-      .then((response) => {
-        console.log('Logout successful:', response.data);
-        window.location.href = '/auth'; // Redirect to login page after logout
-      })
-      .catch((error) => {
-        console.error('Logout error:', error);
-      });
+    
+    try {
+      await authService.logout();
+      window.location.href = '/auth'; // Redirect to login page after logout
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (

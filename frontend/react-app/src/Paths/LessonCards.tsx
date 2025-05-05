@@ -10,13 +10,13 @@ interface LessonCardProps {
   current_page?: number;
 }
 
-const LessonCards = ({ 
+const LessonCards: React.FC<LessonCardProps> = ({ 
   lesson_title, 
   lesson_description, 
   lesson_id, 
   status, 
   current_page = 1 
-}: LessonCardProps) => {
+}) => {
   const navigate = useNavigate();
   
   const handleStartLesson = () => {
@@ -25,7 +25,7 @@ const LessonCards = ({
   };
   
   // Determine button text based on lesson status and progress
-  const getButtonText = () => {
+  const getButtonText = (): string => {
     if (status === 'complete') return 'Review Lesson';
     if (current_page > 1) return 'Continue Lesson';
     return 'Start Lesson';

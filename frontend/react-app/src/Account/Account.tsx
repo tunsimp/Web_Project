@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../NavBar/NavBar";
-import axios from "axios";
+import { accountService, UserData } from "../services/accountService";
 import "./Account.css";
 
 type UserProps = {
@@ -10,7 +10,7 @@ type UserProps = {
 };
 
 const Account = ({ username: initialUsername = "", password: initialPassword = "", email: initialEmail = "" }: UserProps) => {
-  const [userData, setUserData] = useState({
+  const [userData, setUserData] = useState<UserData>({
     user_id: "",
     user_name: initialUsername,
     user_email: initialEmail,
@@ -29,27 +29,17 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/route/account", {
-        withCredentials: true,
+      const fetchedData = await accountService.fetchUserData();
+      setUserData(fetchedData);
+      // Set initial values after fetching user data
+      setInitialValues({
+        user_name: fetchedData.user_name,
+        user_email: fetchedData.user_email,
+        newPassword: "",
+        confirmPassword: "",
       });
-      if (response.data.success) {
-        const fetchedData = {
-          user_id: response.data.user.user_id,
-          user_name: response.data.user.user_name,
-          user_email: response.data.user.user_email,
-        };
-        setUserData(fetchedData);
-        // Set initial values after fetching user data
-        setInitialValues({
-          user_name: fetchedData.user_name,
-          user_email: fetchedData.user_email,
-          newPassword: "",
-          confirmPassword: "",
-        });
-        setError("");
-      }
+      setError("");
     } catch (error) {
-      console.error("Error fetching user data:", error.response?.data || error.message);
       setError(error.response?.data?.message || "Failed to fetch user data");
     }
   };
@@ -78,17 +68,13 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/route/update-account",
-        {
-          user_name: userData.user_name,
-          user_email: userData.user_email,
-          new_password: newPassword || undefined,
-        },
-        { withCredentials: true }
-      );
-      console.log("Update response:", response.data);
-      if (response.data.success) {
+      const result = await accountService.updateAccount({
+        user_name: userData.user_name,
+        user_email: userData.user_email,
+        new_password: newPassword || undefined,
+      });
+      
+      if (result.success) {
         setSuccess("Account updated successfully");
         setNewPassword("");
         setConfirmPassword("");
@@ -103,7 +89,6 @@ const Account = ({ username: initialUsername = "", password: initialPassword = "
         await fetchUserData();
       }
     } catch (error) {
-      console.error("Error updating account:", error.response?.data || error.message);
       setError(error.response?.data?.message || "Failed to update account");
     }
   };

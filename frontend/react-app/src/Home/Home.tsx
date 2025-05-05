@@ -1,29 +1,22 @@
 import Navbar from "../NavBar/NavBar";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import './Home.css';
+import { accountService } from "../services/accountService";
 
 const Home = () => {
-  const [username, setUsername] = useState(null);
-  const [error, setError] = useState(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch user data on component mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/route/account', {
-          withCredentials: true, // Include cookies for authentication
-        });
-
-        if (response.data.success) {
-          setUsername(response.data.user.user_name); // Extract username from response
-        } else {
-          setError(response.data.message); // Handle user not authenticated or not found
-          setUsername(null);
-        }
+        const userData = await accountService.fetchUserData();
+        setUsername(userData.user_name);
+        setError(null);
       } catch (err) {
         console.error("Error fetching user:", err);
-        setError("Failed to load user data");
+        setError(err instanceof Error ? err.message : "Failed to load user data");
         setUsername(null);
       }
     };

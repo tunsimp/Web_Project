@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Lab.css";
-import axios from "axios";
+import { labService } from "../services/labService";
 
 type LabCardsProps = {
     lab_name: string;
@@ -9,7 +9,7 @@ type LabCardsProps = {
     difficulty: string;
     category: string;
     lab_link: string;
-    completed?: boolean; // Add completed prop
+    completed?: boolean;
 };
 
 function LabCards({ 
@@ -19,7 +19,7 @@ function LabCards({
     difficulty, 
     category, 
     lab_link: initialLabLink,
-    completed = false // Default to false if not provided
+    completed = false
 }: LabCardsProps) {
     const [modal, setShowModal] = useState(false);
     const [textValue, setTextValue] = useState("");
@@ -30,71 +30,35 @@ function LabCards({
         setShowModal(!modal);
     };
 
-    const handleStart = () => {
-        axios
-          .post(
-            "http://localhost:5000/api/labs/create-container",
-            {
-              labinfo_id: lab_id,
-            },
-            { withCredentials: true }
-          )
-          .then((response) => {
-            // Handle success
-            console.log("Container created:", response.data);
-            // If backend returns { hostPort }, redirect manually
-            if (response.data.lab_link) {
-                setActiveLabLink(response.data.lab_link);
-                // Open the lab link in a new tab
-              window.open(`${response.data.lab_link}`);
-            }
-          })
-          .catch((error) => {
-            // Handle errors (e.g., 401, 404, 500)
-            console.error("Error creating container:", error.response?.data || error.message);
-            alert("Failed to create container: " + (error.response?.data?.message || "Unknown error"));
-          });
-      };
-
-    const handleStop = () => {
-        axios
-            .post(
-                "http://localhost:5000/api/labs/delete-container",
-                {}, // Empty payload since no data is needed
-                { withCredentials: true } // Include cookies in the request
-            )
-            .then((response) => {
-                console.log("Container deleted:", response.data);
-                setActiveLabLink(""); // Clear the lab link after stopping
-            })
-            .catch((error) => {
-                console.error("Error deleting container:", error.response?.data || error.message);
-                alert("Failed to delete container: " + (error.response?.data?.error || "Unknown error"));
-            });
+    const handleStart = async () => {
+        try {
+            const result = await labService.createContainer(lab_id);
+            setActiveLabLink(result.lab_link);
+            window.open(result.lab_link);
+        } catch (error) {
+            alert(error instanceof Error ? error.message : "Unknown error");
+        }
     };
 
-    const handleSubmit = () => {
-        console.log("Submit clicked with value:", textValue);
-        axios
-            .get(
-                `http://localhost:5000/api/labs/verify-flag?labinfo_id=${lab_id}&flag=${textValue}`,
-                { withCredentials: true } // Include cookies in the request
-            )
-            .then((response) => {
-                // Handle success
-                console.log("Flag submitted:", response.data);
-                if (response.data.success) {
-                    setIsCompleted(true); // Mark as completed when flag is correct
-                    alert(response.data.message || "Flag submitted successfully!");
-                } else {
-                    alert(response.data.message || "Incorrect flag. Try again!");
-                }
-            })
-            .catch((error) => {
-                // Handle errors (e.g., 401, 404, 500)
-                console.error("Error submitting flag:", error.response?.data || error.message);
-                alert("Failed to submit flag: " + (error.response?.data?.message || "Unknown error"));
-            });
+    const handleStop = async () => {
+        try {
+            await labService.deleteContainer();
+            setActiveLabLink(""); // Clear the lab link after stopping
+        } catch (error) {
+            alert(error instanceof Error ? error.message : "Unknown error");
+        }
+    };
+
+    const handleSubmit = async () => {
+        try {
+            const result = await labService.verifyFlag(lab_id, textValue);
+            if (result.success) {
+                setIsCompleted(true); // Mark as completed when flag is correct
+            }
+            alert(result.message);
+        } catch (error) {
+            alert(error instanceof Error ? error.message : "Unknown error");
+        }
         setTextValue(""); // Clear the input field after submission
     };
 

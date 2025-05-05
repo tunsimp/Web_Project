@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './LessonCreate.css';
 import Navbar from '../NavBar/NavBar';
-import axios from 'axios';
+import lessonService from '../services/lessonService';
 
 const LessonCreate = () => {
   // State for lesson title and description
@@ -16,14 +16,14 @@ const LessonCreate = () => {
   ]);
 
   // State to store selected files
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState<(File | null)[]>([null]);
 
   // State for loading and response messages
   const [isLoading, setIsLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState({ type: '', message: '' });
 
   // Handle changes to lesson title and description
-  const handleLessonChange = (e) => {
+  const handleLessonChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setLesson({
       ...lesson,
@@ -32,7 +32,7 @@ const LessonCreate = () => {
   };
 
   // Handle file selection for a specific page
-  const handlePageChange = (index, e) => {
+  const handlePageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.name === "file" && e.target.files && e.target.files[0]) {
       const newSelectedFiles = [...selectedFiles];
       newSelectedFiles[index] = e.target.files[0];
@@ -50,7 +50,7 @@ const LessonCreate = () => {
   };
 
   // Remove a page (keep at least one page)
-  const removePage = (index) => {
+  const removePage = (index: number) => {
     if (lessonPages.length > 1) {
       const updatedPages = lessonPages.filter((_, i) => i !== index);
       updatedPages.forEach((page, idx) => {
@@ -62,48 +62,22 @@ const LessonCreate = () => {
     }
   };
 
-  // Utility function to read file content as text
-  const readFileAsText = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsText(file);
-    });
-  };
-
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // Read file contents for each page
-      const pagesWithContent = await Promise.all(
-        lessonPages.map(async (page, index) => {
-          if (selectedFiles[index]) {
-            const content = await readFileAsText(selectedFiles[index]);
-            return { 
-              page_number: page.page_number, 
-              content,
-              filename: selectedFiles[index].name // Include the filename
-            };
-          }
-          return null;
-        })
+      await lessonService.createLesson(
+        lesson.title,
+        lesson.description,
+        lessonPages,
+        selectedFiles
       );
-      // Prepare data to send
-      const data = {
-        title: lesson.title,
-        description: lesson.description,
-        pages: pagesWithContent.filter(p => p !== null)
-      };
-      // Send POST request to server
-      const response = await axios.post('http://localhost:5000/api/lessons/create', data, {
-        headers: { 'Content-Type': 'application/json' }, withCredentials: true
+      setResponseMessage({ 
+        type: 'success', 
+        message: 'Lesson created successfully!' 
       });
-      setResponseMessage({ type: 'success', message: 'Lesson created successfully!' });
-      console.log('Response:', response.data);
-    } catch (error) {
+    } catch (error: any) {
       setResponseMessage({
         type: 'error',
         message: error.response?.data?.message || 'Failed to create lesson.'
@@ -150,7 +124,7 @@ const LessonCreate = () => {
                   name="description"
                   value={lesson.description}
                   onChange={handleLessonChange}
-                  rows="4"
+                  rows={4}
                   required
                   disabled={isLoading}
                   className="lesson-textarea"
@@ -178,7 +152,7 @@ const LessonCreate = () => {
                   </div>
                   {selectedFiles[index] && (
                     <div className="file-info">
-                      Selected: {selectedFiles[index].name}
+                      Selected: {selectedFiles[index]?.name}
                     </div>
                   )}
                   {lessonPages.length > 1 && (
