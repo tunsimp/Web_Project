@@ -1,7 +1,6 @@
-// components/ProtectedRoute.tsx
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import axios from "axios";
+import authService from '../services/authService';
 
 interface ProtectedRouteProps {
   requiredRole?: string;
@@ -12,17 +11,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole }) => {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/auth/check-auth", { withCredentials: true })
-      .then((res) => {
-        if (res.data.message === "authenticated") {
+    const fetchAuth = async () => {
+      try {
+        const data = await authService.checkAuth();
+        if (data.message === "authenticated") {
           setAuth(true);
-          setUserRole(res.data.user.role); // Assuming the user object has a role field
+          setUserRole(data.user.role);
         } else {
           setAuth(false);
         }
-      })
-      .catch(() => setAuth(false));
+      } catch (error) {
+        setAuth(false);
+      }
+    };
+    fetchAuth();
   }, []);
 
   if (auth === null) {

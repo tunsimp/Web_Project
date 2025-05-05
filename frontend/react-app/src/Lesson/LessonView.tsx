@@ -1,24 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Navbar from '../NavBar/NavBar';
 import './lessonView.css';
-
-interface LessonPageData {
-  lessonpage_id: number;
-  lesson_id: number;
-  page_number: number;
-  content_path: string;
-  content?: string; 
-}
-
-interface LessonData {
-  lesson_id: number;
-  title: string;
-  description: string;
-  pages: LessonPageData[];
-  totalPages: number;
-}
+import lessonService, { LessonData, LessonPageData } from '../services/lessonService';
 
 const LessonView = () => {
   const { lessonId, pageNumber } = useParams();
@@ -34,38 +18,25 @@ const LessonView = () => {
   const pageNum = parseInt(pageNumber || '1', 10);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadLessonData = async () => {
       try {
         setLoading(true);
 
         // Fetch lesson metadata
-        const lessonResponse = await axios.get<LessonData>(
-          `http://localhost:5000/api/lessons/${lessonIdNum}`,
-          { withCredentials: true }
-        );
-        const lessonData = {
-          ...lessonResponse.data,
-          totalPages: lessonResponse.data.pages.length
-        };
+        const lessonData = await lessonService.fetchLesson(lessonIdNum);
         setLesson(lessonData);
 
         // Fetch page data
-        const pageResponse = await axios.get<LessonPageData>(
-          `http://localhost:5000/api/lessons/${lessonIdNum}/pages/${pageNum}`,
-          { withCredentials: true }
-        );
-        setCurrentPage(pageResponse.data);
+        const pageData = await lessonService.fetchLessonPage(lessonIdNum, pageNum);
+        setCurrentPage(pageData);
 
-        // Fetch content from content_path (assuming it's a server-accessible file)
-        const contentResponse = await axios.get(
-          `http://localhost:5000/api/lessons/${pageResponse.data.content_path}`,
-          { withCredentials: true }
-        );
-        setPageContent(contentResponse.data);
+        // Fetch content from content_path
+        const content = await lessonService.fetchPageContent(pageData.content_path);
+        setPageContent(content);
 
         // Calculate progress and update user progress
         setProgress((pageNum / lessonData.totalPages) * 100);
-        await updateUserProgress(lessonIdNum, pageNum, lessonData.totalPages);
+        await lessonService.updateUserProgress(lessonIdNum, pageNum, lessonData.totalPages);
 
         setLoading(false);
       } catch (err: any) {
@@ -74,22 +45,9 @@ const LessonView = () => {
         setLoading(false);
       }
     };
-    fetchData();
+    
+    loadLessonData();
   }, [lessonIdNum, pageNum]);
-
-  const updateUserProgress = async (lessonId: number, pageNumber: number, totalPages: number) => {
-    try {
-      const isLastPage = pageNumber === totalPages;
-      const status = isLastPage ? 'complete' : 'incomplete';
-      await axios.post(
-        `http://localhost:5000/api/lessons/progress/${lessonId}`,
-        { currentPage: pageNumber, status },
-        { withCredentials: true }
-      );
-    } catch (err) {
-      console.error('Failed to update progress:', err);
-    }
-  };
 
   const navigateToPage = (newPageNum: number) => {
     if (lesson && newPageNum >= 1 && newPageNum <= lesson.totalPages) {
@@ -99,13 +57,10 @@ const LessonView = () => {
 
   const handlePrevious = () => navigateToPage(pageNum - 1);
   const handleNext = () => navigateToPage(pageNum + 1);
+  
   const handleComplete = async () => {
     try {
-      await axios.post(
-        `http://localhost:5000/api/lessons/progress/${lessonIdNum}`,
-        { currentPage: pageNum, status: 'complete' },
-        { withCredentials: true }
-      );
+      await lessonService.updateUserProgress(lessonIdNum, pageNum, lesson?.totalPages || 0, 'complete');
       navigate('/paths');
     } catch (err) {
       console.error('Failed to mark lesson as complete:', err);
