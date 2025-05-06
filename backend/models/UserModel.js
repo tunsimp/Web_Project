@@ -1,8 +1,7 @@
-// UserModel.js
 const pool = require("../config/db");
 const bcrypt = require("bcryptjs");
 
-// Find a user by username
+// User Management Functions
 async function findUserByUsername(username) {
   try {
     const [rows] = await pool.query("SELECT * FROM Users WHERE user_name = ?", [
@@ -15,7 +14,6 @@ async function findUserByUsername(username) {
   }
 }
 
-// Register a new user
 async function registerUser(username, password, email) {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,7 +27,6 @@ async function registerUser(username, password, email) {
   }
 }
 
-// Find a user by ID
 async function findUserById(userId) {
   try {
     const [rows] = await pool.query("SELECT * FROM Users WHERE user_id = ?", [
@@ -42,7 +39,6 @@ async function findUserById(userId) {
   }
 }
 
-// Find a user by email, excluding a specific user ID if provided
 async function findUserByEmail(email, excludeUserId = null) {
   try {
     let query = "SELECT * FROM Users WHERE user_email = ?";
@@ -59,7 +55,6 @@ async function findUserByEmail(email, excludeUserId = null) {
   }
 }
 
-// Update user information
 async function updateUser(userId, updates) {
   try {
     const { user_name, user_email, user_password } = updates;
@@ -96,10 +91,75 @@ async function updateUser(userId, updates) {
   }
 }
 
+// User Lesson Progress Functions
+async function getLessonProgress(userId, lessonId) {
+  try {
+    const [progress] = await pool.query(
+      "SELECT * FROM UserLessonProgress WHERE user_id = ? AND lesson_id = ?",
+      [userId, lessonId]
+    );
+    return progress.length > 0 ? progress[0] : null;
+  } catch (error) {
+    console.error("Error getting lesson progress:", error.message);
+    throw new Error("Database error while getting lesson progress");
+  }
+}
+
+async function getAllUserLessonProgress(userId) {
+  try {
+    const [progress] = await pool.query(
+      `SELECT ulp.*, l.title, l.description 
+       FROM UserLessonProgress ulp
+       JOIN Lessons l ON ulp.lesson_id = l.lesson_id
+       WHERE ulp.user_id = ?`,
+      [userId]
+    );
+    return progress;
+  } catch (error) {
+    console.error("Error getting all user lesson progress:", error.message);
+    throw new Error("Database error while getting all user lesson progress");
+  }
+}
+
+async function updateLessonProgress(userId, lessonId, currentPage, status) {
+  try {
+    // Check if a record exists
+    const [existingProgress] = await pool.query(
+      "SELECT * FROM UserLessonProgress WHERE user_id = ? AND lesson_id = ?",
+      [userId, lessonId]
+    );
+
+    if (existingProgress.length > 0) {
+      // Update existing record
+      await pool.query(
+        "UPDATE UserLessonProgress SET current_page = ?, status = ?, last_accessed = CURRENT_TIMESTAMP WHERE user_id = ? AND lesson_id = ?",
+        [currentPage, status, userId, lessonId]
+      );
+      return existingProgress[0].userlesson_id;
+    } else {
+      // Create new record
+      const [result] = await pool.query(
+        "INSERT INTO UserLessonProgress (user_id, lesson_id, current_page, status) VALUES (?, ?, ?, ?)",
+        [userId, lessonId, currentPage, status]
+      );
+      return result.insertId;
+    }
+  } catch (error) {
+    console.error("Error updating lesson progress:", error.message);
+    throw new Error("Database error while updating lesson progress");
+  }
+}
+
 module.exports = {
+  // User management functions
   findUserByUsername,
   registerUser,
   findUserById,
   findUserByEmail,
   updateUser,
+
+  // User lesson progress functions
+  getLessonProgress,
+  getAllUserLessonProgress,
+  updateLessonProgress,
 };

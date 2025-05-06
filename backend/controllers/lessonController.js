@@ -1,7 +1,7 @@
 // controllers/lessonController.js
 const Lesson = require("../models/lessonModel");
 const LessonPage = require("../models/LessonPageModel");
-const UserLessonProgress = require("../models/UserLessonProgress");
+const UserModel = require("../models/UserModel");
 
 exports.getAllLessons = async (req, res) => {
   try {
@@ -313,7 +313,7 @@ exports.deleteLessonPage = async (req, res) => {
 exports.getUserProgress = async (req, res) => {
   try {
     const { userId } = req.params;
-    const progress = await UserLessonProgress.getAllForUser(userId);
+    const progress = await UserModel.getAllUserLessonProgress(userId);
     res.status(200).json(progress);
   } catch (error) {
     console.error("Error fetching user progress:", error);
@@ -335,7 +335,7 @@ exports.updateUserProgress = async (req, res) => {
         .json({ message: "Current page and status are required" });
     }
 
-    const progressId = await UserLessonProgress.updateProgress(
+    const progressId = await UserModel.updateLessonProgress(
       userId,
       lessonId,
       currentPage,
@@ -358,7 +358,7 @@ exports.getUserLessonsWithProgress = async (req, res) => {
     const userId = req.user_id;
 
     const lessons = await Lesson.getAll();
-    const progress = await UserLessonProgress.getAllForUser(userId);
+    const progress = await UserModel.getAllUserLessonProgress(userId);
     // Create a map of progress by lesson ID for easy lookup
     const progressByLessonId = {};
     progress.forEach((item) => {
