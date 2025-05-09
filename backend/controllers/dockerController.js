@@ -154,12 +154,15 @@ exports.deleteContainer = async (req, res) => {
     await deleteContainer(containerId);
 
     // Create a new token with containerId set to an empty string
-    const newToken = signToken({
-      username: decoded.username,
-      uid: decoded.uid,
-      role: decoded.role,
-      containerId: "", // Reset containerId
-    });
+    const newToken = signToken(
+      {
+        username: decoded.username,
+        uid: decoded.uid,
+        role: decoded.role,
+        containerId: "", // Reset containerId
+      },
+      "Login"
+    );
 
     // Set the new token in the cookies
     res.cookie("token", newToken, { httpOnly: true });

@@ -39,14 +39,10 @@ async function findUserById(userId) {
   }
 }
 
-async function findUserByEmail(email, excludeUserId = null) {
+async function findUserByEmailAndUser(email, username) {
   try {
-    let query = "SELECT * FROM Users WHERE user_email = ?";
-    const params = [email];
-    if (excludeUserId) {
-      query += " AND user_id != ?";
-      params.push(excludeUserId);
-    }
+    let query = "SELECT * FROM Users WHERE user_email = ? AND user_name = ?";
+    const params = [email, username];
     const [rows] = await pool.query(query, params);
     return rows.length > 0 ? rows[0] : null;
   } catch (error) {
@@ -60,6 +56,7 @@ async function updateUser(userId, updates) {
     const { user_name, user_email, user_password } = updates;
     let updateFields = [];
     let params = [];
+    console.log("Updating user with ID:", userId);
 
     if (user_name) {
       updateFields.push("user_name = ?");
@@ -70,6 +67,8 @@ async function updateUser(userId, updates) {
       params.push(user_email);
     }
     if (user_password) {
+      console.log("Updating password");
+      console.log("Password:", user_password);
       const hashedPassword = await bcrypt.hash(user_password, 10);
       updateFields.push("user_password = ?");
       params.push(hashedPassword);
@@ -155,7 +154,7 @@ module.exports = {
   findUserByUsername,
   registerUser,
   findUserById,
-  findUserByEmail,
+  findUserByEmailAndUser,
   updateUser,
 
   // User lesson progress functions

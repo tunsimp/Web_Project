@@ -2,9 +2,11 @@ import { useState } from 'react';
 import './LoginSignup.css';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
+import ForgotPassword from './ForgotPassword';
 
 const LoginSignup = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -17,7 +19,15 @@ const LoginSignup = () => {
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
+    setIsForgotPassword(false);
     setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+    setMessage('');
+  };
+
+  const toggleForgotPassword = () => {
+    setIsForgotPassword(!isForgotPassword);
+    setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+    setMessage('');
   };
 
   const handleInputChange = (e) => {
@@ -33,6 +43,7 @@ const LoginSignup = () => {
     try {
       if (!isLogin && formData.password !== formData.confirmPassword) {
         setMessage('Passwords do not match');
+        setIsSubmitting(false);
         return;
       }
 
@@ -68,6 +79,10 @@ const LoginSignup = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isForgotPassword) {
+    return <ForgotPassword toggleToLogin={toggleForgotPassword} />;
+  }
 
   return (
     <div className="container">
@@ -112,6 +127,11 @@ const LoginSignup = () => {
                     <a href="#" onClick={toggleForm}>
                       Create an account
                     </a>
+                    <div className="forgot-password">
+                    <a href="#" onClick={toggleForgotPassword}>
+                    Forgot password?
+                    </a>
+                  </div>
                   </div>
                 </div>
               </>

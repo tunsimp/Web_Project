@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://localhost:5000/api';
 
 /**
  * Interface for user data (when using TypeScript)
@@ -33,7 +33,7 @@ export const authService = {
   login: async (username, password) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/auth/login`, 
+        `${API_URL}/auth/login`, 
         { username, password },
         { withCredentials: true }
       );
@@ -53,9 +53,39 @@ export const authService = {
   register: async (username, email, password) => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/auth/register`, 
+        `${API_URL}/auth/register`, 
         { username, email, password },
         { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Initiate password recovery process
+   * @param {string} username - User's username
+   * @param {string} email - User's email
+   * @returns {Promise} - The API response
+   */
+  forgotPassword: async (username, email) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/auth/forgot-password`,
+        { username, email },
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  resetPassword: async (token,password) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/auth/reset-password`,
+        { token,password },
       );
       return response.data;
     } catch (error) {
@@ -69,7 +99,7 @@ export const authService = {
    */
   checkAuth: async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/check-auth`, { 
+      const response = await axios.get(`${API_URL}/auth/check-auth`, { 
         withCredentials: true 
       });
       return response.data;
@@ -86,7 +116,7 @@ export const authService = {
   logout: async () => {
     try {
       const response = await axios.post(
-        `${API_URL}/api/auth/logout`, 
+        `${API_URL}/auth/logout`, 
         {}, 
         { withCredentials: true }
       );

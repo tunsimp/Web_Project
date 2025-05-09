@@ -1,4 +1,5 @@
 import axios from "axios";
+const API_BASE_URL = 'http://localhost:5000/api';
 
 export interface LabData {
   lab_id: string;
@@ -15,7 +16,7 @@ export const labService = {
   // Fetch all labs with their status
   fetchLabs: async (): Promise<LabData[]> => {
     try {
-      const response = await axios.get("http://localhost:5000/api/labs", { 
+      const response = await axios.get(`${API_BASE_URL}/labs`, { 
         withCredentials: true 
       });
       
@@ -36,7 +37,7 @@ export const labService = {
   createContainer: async (labinfo_id: string): Promise<{ lab_link: string }> => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/labs/create-container",
+        `${API_BASE_URL}/labs/create-container`,
         { labinfo_id },
         { withCredentials: true }
       );
@@ -54,7 +55,7 @@ export const labService = {
   deleteContainer: async (): Promise<void> => {
     try {
       await axios.post(
-        "http://localhost:5000/api/labs/delete-container",
+        `${API_BASE_URL}/labs/delete-container`,
         {}, // Empty payload since no data is needed
         { withCredentials: true }
       );
@@ -68,7 +69,7 @@ export const labService = {
   verifyFlag: async (labinfo_id: string, flag: string): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/labs/verify-flag?labinfo_id=${labinfo_id}&flag=${flag}`,
+        `${API_BASE_URL}/labs/verify-flag?labinfo_id=${labinfo_id}&flag=${flag}`,
         { withCredentials: true }
       );
       

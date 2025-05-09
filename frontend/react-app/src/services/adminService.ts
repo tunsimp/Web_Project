@@ -1,4 +1,5 @@
 import axios from 'axios';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 export interface LessonData {
   id: number;
@@ -10,7 +11,7 @@ export const adminService = {
   // Fetch all lessons
   fetchLessons: async (): Promise<LessonData[]> => {
     try {
-      const response = await axios.get('http://localhost:5000/api/lessons', { withCredentials: true });
+      const response = await axios.get(`${API_BASE_URL}/lessons`, { withCredentials: true });
       
       // Convert object response to array with id included
       const lessonsArray = Object.keys(response.data).map(key => ({
@@ -28,32 +29,12 @@ export const adminService = {
   // Delete a lesson by ID
   deleteLesson: async (id: number): Promise<void> => {
     try {
-      await axios.delete(`http://localhost:5000/api/lessons/${id}`, { withCredentials: true });
+      await axios.delete(`${API_BASE_URL}/lessons/${id}`, { withCredentials: true });
     } catch (error) {
       console.error("Error deleting lesson:", error);
       throw new Error('Failed to delete lesson. Please try again later.');
     }
   },
 
-  // Additional methods can be added here for creating or updating lessons
-  // Example:
-  // createLesson: async (lessonData: Omit<LessonData, 'id'>): Promise<LessonData> => {
-  //   try {
-  //     const response = await axios.post('http://localhost:5000/api/lessons', lessonData, { withCredentials: true });
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error("Error creating lesson:", error);
-  //     throw new Error('Failed to create lesson. Please try again later.');
-  //   }
-  // },
-  //
-  // updateLesson: async (id: number, lessonData: Partial<LessonData>): Promise<LessonData> => {
-  //   try {
-  //     const response = await axios.put(`http://localhost:5000/api/lessons/${id}`, lessonData, { withCredentials: true });
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error("Error updating lesson:", error);
-  //     throw new Error('Failed to update lesson. Please try again later.');
-  //   }
-  // }
+
 };

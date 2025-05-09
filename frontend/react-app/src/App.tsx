@@ -1,6 +1,6 @@
 // App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginSignup from './LoginSignup/LoginSignup';
+import LoginSignup from './Auth/LoginSignup';
 import ProtectedRoute from './ProtectedRoute/ProtectedRoute';
 import NotFound from './NotFound/NotFound';
 import About from './About/About';
@@ -12,12 +12,14 @@ import Account from './Account/Account';
 import LessonView from './Lesson/LessonView';
 import LessonEditor from './Lesson/LessonEditor';
 import LessonCreate from './Lesson/LessonCreate';
+import ResetPassword from './Auth/ResetPassword';
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/auth" element={<LoginSignup />} />
         <Route path="/" element={<About />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
           <Route path="/labs" element={<Lab />} />

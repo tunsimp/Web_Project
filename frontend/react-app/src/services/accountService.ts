@@ -1,4 +1,5 @@
 import axios from "axios";
+const API_BASE_URL = 'http://localhost:5000/api';
 
 // Define types
 export type UserData = {
@@ -18,7 +19,7 @@ export const accountService = {
   // Fetch user data
   fetchUserData: async (): Promise<UserData> => {
     try {
-      const response = await axios.get("http://localhost:5000/api/route/account", {
+      const response = await axios.get(`${API_BASE_URL}/route/account`, {
         withCredentials: true,
       });
       
@@ -40,7 +41,7 @@ export const accountService = {
   updateAccount: async (params: UpdateAccountParams) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/route/update-account",
+        `${API_BASE_URL}/route/update-account`,
         {
           user_name: params.user_name,
           user_email: params.user_email,

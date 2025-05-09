@@ -1,3 +1,5 @@
 node_modules/
 /backend/content
 /backend/content
+backend/.env
+frontend/react-app/.env
