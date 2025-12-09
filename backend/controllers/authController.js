@@ -157,6 +157,7 @@ exports.forgotPassword = async (req, res) => {
       subject: "Password Reset",
       message: `Click the link to reset your password: ${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`,
     };
+    console.log("Email options:", emailOptions);
     // Send the reset token to the user's email (implementation not shown)
     // await sendResetEmail(email, resetToken);
     await this.sendEmail(emailOptions);
